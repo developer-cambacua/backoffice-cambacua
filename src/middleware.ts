@@ -21,7 +21,6 @@ interface Token {
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  console.log("🔍 Middleware ejecutado para:", pathname);
   const authPaths = ["/"];
   const publicPaths = ["/access-denied", "/error"];
 
@@ -33,7 +32,7 @@ export async function middleware(req: NextRequest) {
       req,
       secret: process.env.NEXTAUTH_SECRET,
     })) as Token | null;
-    console.log("📦 Token recibido:", token);
+
     if (isPublicPath) {
       return NextResponse.next();
     }
@@ -58,8 +57,6 @@ export async function middleware(req: NextRequest) {
         .select("isActive")
         .eq("email", email)
         .single();
-
-      console.log("📄 Supabase usuario:", { data, error });
 
       if (error || !data?.isActive) {
         return NextResponse.redirect(new URL("/access-denied", req.url));
