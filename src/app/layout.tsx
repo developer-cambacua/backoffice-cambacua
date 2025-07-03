@@ -15,6 +15,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import QueryProvider from "@/context/QueryProvider";
 import { UserInitializer } from "@/providers/UserInitializer";
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -45,7 +47,9 @@ export default function RootLayout({
                   className={`${openSans.variable} ${GeistSans.variable} ${GeistMono.variable} text-secondary-950 font-openSans bg-slate-50`}>
                   <AntdRegistry>{children}</AntdRegistry>
                   <ReactQueryDevtools initialIsOpen={false} />
-                <Toaster position="top-right" richColors closeButton />
+                  <Toaster position="top-right" richColors closeButton />
+                  <Analytics />
+                  <SpeedInsights />
                 </body>
               </html>
             </QueryProvider>

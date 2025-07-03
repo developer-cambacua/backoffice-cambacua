@@ -70,7 +70,6 @@ export default function Page() {
   const { data: reservas, isLoading: loadingReservas } = useQuery({
     queryKey: ["reservas"],
     queryFn: fetchReservas,
-    staleTime: 0,
   });
 
   const fetchDepartamentos = async () => {

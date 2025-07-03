@@ -1,8 +1,29 @@
+"use client"
+
+import { useRouter } from "next/navigation";
+
 export default function Page() {
+  const router = useRouter();
   return (
-    <>
-      <section className="max-w-3xl mx-auto px-4 py-12 text-gray-800">
-        <h1 className="text-3xl font-bold mb-6">
+    <div className="container mx-auto p-6">
+      <div className="max-w-4xl mx-auto mb-2">
+        <button
+          className="flex items-center gap-x-1 hover:text-primary-500 transition-colors"
+          onClick={() => router.back()}>
+          <svg
+            className="size-8"
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="currentColor">
+            <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
+          </svg>
+          Volver
+        </button>
+      </div>
+      <section className="max-w-4xl mx-auto p-4 sm:p-6 text-gray-800 bg-white outline outline-1 outline-gray-300 rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold mb-0.5">
           Política de Privacidad de Cambacuá
         </h1>
         <p className="text-sm text-gray-500 mb-10">
@@ -59,17 +80,11 @@ export default function Page() {
         <h2 className="text-xl font-semibold mb-2">6. Tus derechos</h2>
         <p className="mb-6">
           Podés pedir acceso, modificación o eliminación de tus datos
-          escribiendo a
-          <a
-            href="mailto:cambacua@ejemplo.com"
-            className="text-blue-600 underline">
-            cambacua@ejemplo.com
-          </a>
-          o al
+          escribiendo al{" "}
           <a
             href="https://wa.me/5491157479361"
             target="_blank"
-            className="text-blue-600 underline">
+            className="text-blue-600 hover:text-blue-700 underline transition-colors">
             +54 9 11 5747 9361
           </a>
           .
@@ -89,24 +104,16 @@ export default function Page() {
 
         <h2 className="text-xl font-semibold mb-2">9. Contacto</h2>
         <p className="mb-1">Por dudas o reclamos:</p>
-        <p className="mb-1">
-          Correo:{" "}
-          <a
-            href="mailto:cambacua@ejemplo.com"
-            className="text-blue-600 underline">
-            cambacua@ejemplo.com
-          </a>
-        </p>
         <p>
           WhatsApp:{" "}
           <a
             href="https://wa.me/5491157479361"
             target="_blank"
-            className="text-blue-600 underline">
+            className="text-blue-600 hover:text-blue-700 underline transition-colors">
             +54 9 11 5747 9361
           </a>
         </p>
       </section>
-    </>
+    </div>
   );
 }

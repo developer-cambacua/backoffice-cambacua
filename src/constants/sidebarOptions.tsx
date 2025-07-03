@@ -1,12 +1,4 @@
-import {
-  Tag,
-  UserCog,
-  Cog,
-  LifeBuoy,
-  Send,
-  LayoutDashboard,
-  Building2,
-} from "lucide-react";
+import { Tag, UserCog, Cog, LayoutDashboard, Building2 } from "lucide-react";
 
 function chartNoAxesCombines() {
   return (
@@ -31,90 +23,38 @@ function chartNoAxesCombines() {
 }
 
 export const sidebarData = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Tablero",
+      url: "/tablero",
       icon: LayoutDashboard,
       disabled: true,
-      items: [
-        {
-          title: "Seguimiento",
-          url: "/tablero",
-        },
-      ],
     },
     {
       title: "Reservas",
+      url: "/reservas",
       icon: Tag,
-      items: [
-        {
-          title: "Listado",
-          url: "/reservas",
-        },
-        {
-          title: "Añadir reserva",
-          url: "/reservas/carga-1",
-        },
-      ],
     },
     {
       title: "Departamentos",
+      url: "/departamentos",
       icon: Building2,
-      items: [
-        {
-          title: "Listado",
-          url: "/departamentos",
-        },
-      ],
     },
     {
       title: "Reportes",
+      url: "/reportes",
       icon: chartNoAxesCombines,
-      items: [
-        {
-          title: "Listado",
-          url: "/reportes",
-        },
-      ],
     },
     {
       title: "Gestión de usuarios",
+      url: "/gestionUsuarios",
       icon: UserCog,
-      items: [
-        {
-          title: "Listado",
-          url: "/gestionUsuarios",
-        },
-      ],
     },
     {
       title: "Configuración",
       url: "/configuracion",
-      disabled: true,
       icon: Cog,
-      // items: [
-      //   {
-      //     title: "General",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Team",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Billing",
-      //     url: "#",
-      //   },
-      //   {
-      //     title: "Limits",
-      //     url: "#",
-      //   },
-      // ],
+      disabled: true,
     },
   ],
   // navSecondary: [
