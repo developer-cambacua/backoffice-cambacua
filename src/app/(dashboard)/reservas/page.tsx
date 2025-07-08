@@ -93,7 +93,7 @@ export default function Page() {
       .channel("reservasTableChannel")
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "reservas" },
+        { event: "*", schema: "public", table: "reservas" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["reservas"] });
         }

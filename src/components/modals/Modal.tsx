@@ -23,7 +23,7 @@ const ModalHeader: React.FC<ModalHeaderProps> = ({ title, subtitle }) => {
       <Dialog.Title as="h3" className="text-2xl font-semibold leading-6">
         {title}
       </Dialog.Title>
-      {subtitle && <p className="max-w-[45ch] mt-1 lg:text-lg">{subtitle}</p>}
+      {subtitle && <p className="max-w-[45ch] mt-1 text-sm 2xl:text-base">{subtitle}</p>}
     </div>
   );
 };

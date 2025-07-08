@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useRouter } from "next/navigation";
 
@@ -104,7 +104,7 @@ export default function Page() {
 
         <h2 className="text-xl font-semibold mb-2">9. Contacto</h2>
         <p className="mb-1">Por dudas o reclamos:</p>
-        <p>
+        <p className="mb-6">
           WhatsApp:{" "}
           <a
             href="https://wa.me/5491157479361"
@@ -112,6 +112,15 @@ export default function Page() {
             className="text-blue-600 hover:text-blue-700 underline transition-colors">
             +54 9 11 5747 9361
           </a>
+        </p>
+
+        <h2 className="text-xl font-semibold mb-2">
+          10. Aceptación de los Términos
+        </h2>
+        <p className="mb-6">
+          Al usar nuestra plataforma, aceptás esta Política de Privacidad y
+          nuestros términos de uso. Si no estás de acuerdo, por favor no
+          utilices el sistema.
         </p>
       </section>
     </div>
