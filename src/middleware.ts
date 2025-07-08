@@ -22,7 +22,7 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   const authPaths = ["/"];
-  const publicPaths = ["/access-denied", "/error"];
+  const publicPaths = ["/access-denied", "/error", "/politica-de-privacidad"];
 
   const isAuthPath = authPaths.includes(pathname);
   const isPublicPath = publicPaths.includes(pathname);
