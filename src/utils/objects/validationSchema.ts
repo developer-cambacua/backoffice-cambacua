@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { esHoraValida, normalizarHoraInput } from "../functions/functions";
 
 /* ------------- Validación y default values para reservas 1 , 2 y 3 ------------- */
 
@@ -64,8 +65,26 @@ export const zodRSchema = z.object({
         });
       }
     }),
-  check_in: z.string().optional(),
-  check_out: z.string().optional(),
+  check_in: z
+    .string({
+      required_error: "La hora es obligatoria",
+      invalid_type_error: "Ingresá una hora válida",
+    })
+    .transform((val) => normalizarHoraInput(val))
+    .refine((val) => esHoraValida(val), {
+      message: "Ingresá una hora válida",
+    })
+    .optional(),
+  check_out: z
+    .string({
+      required_error: "La hora es obligatoria",
+      invalid_type_error: "Ingresá una hora válida",
+    })
+    .transform((val) => normalizarHoraInput(val))
+    .refine((val) => esHoraValida(val), {
+      message: "Ingresá una hora válida",
+    })
+    .optional(),
   valor_reserva: z
     .string()
     .min(1, "Ingresá un valor de reserva")
@@ -139,8 +158,8 @@ export const zodRSchema2 = z.object({
     .string()
     .min(1, "Este campo es obligatorio")
     .regex(/^[A-Za-z0-9]{5,12}$/, "Solo se permiten caracteres alfanúmericos")
-    .min(7, "El DNI/Pasaporte debe tener al menos 7 dígitos")
-    .max(10, "Ingresá un DNI/Pasaporte válido"),
+    .min(7, "El número de identificación debe tener al menos 7 dígitos")
+    .max(10, "Ingresá un número de identificación válido"),
   nombre: z
     .string()
     .min(1, "Este campo es obligatorio")
@@ -292,8 +311,24 @@ export const zodRSchema3 = z.object({
             invalid_type_error: "Seleccioná un responsable",
           })
           .min(1, "Seleccioná un responsable"),
-        hora_ingreso_limpieza: z.string().min(1, "Este campo es obligatorio"),
-        hora_egreso_limpieza: z.string().min(1, "Este campo es obligatorio"),
+        hora_ingreso_limpieza: z
+          .string({
+            required_error: "La hora es obligatoria",
+            invalid_type_error: "Ingresá una hora válida",
+          })
+          .transform((val) => normalizarHoraInput(val))
+          .refine((val) => esHoraValida(val), {
+            message: "Ingresá una hora válida",
+          }),
+        hora_egreso_limpieza: z
+          .string({
+            required_error: "La hora es obligatoria",
+            invalid_type_error: "Ingresá una hora válida",
+          })
+          .transform((val) => normalizarHoraInput(val))
+          .refine((val) => esHoraValida(val), {
+            message: "Ingresá una hora válida",
+          }),
       }),
       {
         required_error: "Debés asignar al menos un responsable",

@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { CardData } from "@/components/cards/CardData";
-import { Spinner } from "@/components/spinner/Spinner";
 import { supabase } from "@/utils/supabase/client";
 import {
   calculateTimeDifference,
   formatCurrencyToArs,
+  normalizarHoraInput,
   stringToFloat,
   stringToInt,
 } from "@/utils/functions/functions";
@@ -27,7 +27,6 @@ import {
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TimeInput } from "@/components/inputs/TimeInput";
 
 import { NewSelect } from "@/components/select/NewSelect";
 import { MinusCircle, PlusIcon } from "lucide-react";
@@ -51,8 +50,6 @@ export default function CargaTres({
   deptosFromServer: any[];
   empleadosFromServer: any[];
 }) {
-  const databaseName: string = "reservas";
-
   const router = useRouter();
   const [disabled, setDisabled] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -274,17 +271,22 @@ export default function CargaTres({
       }
 
       const { error: reservaFormError } = await supabase
-        .from(databaseName)
+        .from("reservas")
         .update({
-          cantidad_fichas_lavadero: stringToInt(data.cantidad_fichas_lavadero),
+          cantidad_fichas_lavadero: data.cantidad_fichas_lavadero
+            ? stringToInt(data.cantidad_fichas_lavadero)
+            : null,
           responsable_check_out: formData.responsable_check_out,
           check_out_especial:
             formData.check_out_especial === "no" ? false : true,
-          valor_viatico: stringToFloat(data.valor_viatico),
-          destino_viatico: reserva.departamento.id,
+          valor_viatico: data.valor_viatico
+            ? stringToFloat(data.valor_viatico)
+            : null,
+          destino_viatico:
+            data.a_donde_viatico === 0 ? null : data.a_donde_viatico,
           estado_reserva: "completado",
         })
-        .eq("id", reserva?.id);
+        .eq("id", reservaFromServer.id);
 
       if (reservaFormError) {
         setDisabled(false);
@@ -618,17 +620,35 @@ export default function CargaTres({
                                                 control={control}
                                                 render={({ field }) => {
                                                   return (
-                                                    <TimeInput
+                                                    <Input
                                                       {...field}
+                                                      value={field.value ?? ""}
+                                                      onBlur={(e) => {
+                                                        const value =
+                                                          e.target.value;
+                                                        const normalizado =
+                                                          normalizarHoraInput(
+                                                            value
+                                                          );
+                                                        setValue(
+                                                          `responsables_limpieza.${index}.hora_ingreso_limpieza`,
+                                                          normalizado as string
+                                                        );
+                                                      }}
                                                       error={
                                                         !!errors
                                                           .responsables_limpieza?.[
                                                           index
                                                         ]?.hora_ingreso_limpieza
                                                       }
-                                                      onChange={(value) => {
-                                                        field.onChange(value);
-                                                      }}
+                                                      aria-invalid={
+                                                        errors
+                                                          .responsables_limpieza?.[
+                                                          index
+                                                        ]?.hora_ingreso_limpieza
+                                                          ? "true"
+                                                          : "false"
+                                                      }
                                                     />
                                                   );
                                                 }}
@@ -671,16 +691,34 @@ export default function CargaTres({
                                                 }
                                                 control={control}
                                                 render={({ field }) => (
-                                                  <TimeInput
+                                                  <Input
                                                     {...field}
+                                                    value={field.value ?? ""}
+                                                    onBlur={(e) => {
+                                                      const value =
+                                                        e.target.value;
+                                                      const normalizado =
+                                                        normalizarHoraInput(
+                                                          value
+                                                        );
+                                                      setValue(
+                                                        `responsables_limpieza.${index}.hora_egreso_limpieza`,
+                                                        normalizado
+                                                      );
+                                                    }}
                                                     error={
                                                       !!errors
                                                         .responsables_limpieza?.[
                                                         index
                                                       ]?.hora_egreso_limpieza
                                                     }
-                                                    onChange={(value) =>
-                                                      field.onChange(value)
+                                                    aria-invalid={
+                                                      errors
+                                                        .responsables_limpieza?.[
+                                                        index
+                                                      ]?.hora_egreso_limpieza
+                                                        ? "true"
+                                                        : "false"
                                                     }
                                                   />
                                                 )}
@@ -930,6 +968,7 @@ export default function CargaTres({
                                             render={({ field }) => (
                                               <Input
                                                 {...field}
+                                                disabled={viatico === "no"}
                                                 error={!!errors.valor_viatico}
                                                 aria-invalid={
                                                   errors.valor_viatico
@@ -970,11 +1009,7 @@ export default function CargaTres({
                                             control={control}
                                             render={({ field }) => (
                                               <NewSelect
-                                                disabled={
-                                                  viatico === "si"
-                                                    ? false
-                                                    : true
-                                                }
+                                                disabled={viatico === "no"}
                                                 errors={
                                                   !!errors.a_donde_viatico
                                                 }

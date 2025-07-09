@@ -773,6 +773,7 @@ export default function CargaDos({
                                     control={control}
                                     errors={errors}
                                     register={register}
+                                    setValue={setValue}
                                   />
                                 )}
                                 {currentStep === 3 && (

@@ -10,7 +10,6 @@
     "tailwind": "tailwindcss -i ./src/css/globals.css -o ./src/css/style.css --watch"
   },
   "dependencies": {
-    "@ant-design/nextjs-registry": "^1.0.2",
     "@headlessui/react": "1.7.18",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-avatar": "^1.1.9",
@@ -34,7 +33,6 @@
     "@tanstack/react-table": "^8.20.5",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
-    "antd": "^5.24.8",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -57,7 +55,6 @@
     "react-hook-form": "^7.53.0",
     "react-json-to-csv": "^1.2.0",
     "react-responsive": "10.0.0",
-    "react-select": "^5.8.3",
     "react-toastify": "^10.0.6",
     "react-use-downloader": "^1.2.8",
     "recharts": "^2.15.1",
@@ -66,7 +63,6 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "use-debounce": "^10.0.5",
-    "yup": "^1.4.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.1"
   },

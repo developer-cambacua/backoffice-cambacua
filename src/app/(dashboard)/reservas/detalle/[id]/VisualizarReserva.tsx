@@ -1,31 +1,32 @@
 "use client";
 
 import { Chip, getStatusProps } from "@/components/chip/Chip";
-import { Spinner } from "@/components/spinner/Spinner";
 import { formatTimestampDay, getAppReserva } from "@/utils/functions/functions";
 import { supabase } from "@/utils/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import clsx from "clsx";
 import { Download } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useDownloader from "react-use-downloader";
 
 interface IData {
+  id: string;
   reservaFromServer: any;
   responsablesFromServer: any;
 }
 
 export default function VisualizarReserva({
+  id,
   reservaFromServer,
   responsablesFromServer,
 }: IData) {
+  const reserva = reservaFromServer;
+  const responsablesLimpieza = responsablesFromServer;
   const router = useRouter();
-  const params: any = useParams();
-  const reservaId = decodeURIComponent(params.id);
+  const reservaId = Number(id);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   const { download } = useDownloader();
-  
 
   const handleDownload = () => {
     if (fileUrl) {
@@ -39,56 +40,6 @@ export default function VisualizarReserva({
       download(fileUrl, finalFileName);
     }
   };
-
-  const fetchReserva = async () => {
-    const { data, error } = await supabase
-      .from("reservas")
-      .select(
-        `*, departamento:departamentos!reservas_departamento_id_fkey(*), huesped:huespedes(*), responsable_check_in:usuarios!reservas_responsable_check_in_fkey(nombre, apellido), responsable_check_out:usuarios!reservas_responsable_check_out_fkey(nombre, apellido),
-              responsable_limpieza:usuarios!reservas_responsable_limpieza_fkey(nombre, apellido),
-              destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
-      )
-      .eq("id", reservaId)
-      .neq("estado_reserva", "cancelado")
-      .single();
-
-    if (error) throw new Error(error.message);
-
-    return data || [];
-  };
-
-  const { data: reserva, isLoading: loadingReserva } = useQuery({
-    queryKey: ["reserva"],
-    queryFn: fetchReserva,
-    initialData: reservaFromServer,
-  });
-
-  const fetchResponsablesLimpieza = async () => {
-    const { data, error } = await supabase
-      .from("responsables_limpieza")
-      .select(
-        `
-          tiempo_limpieza,
-          empleado:empleado_id (
-            id,
-            nombre,
-            apellido
-          )
-        `
-      )
-      .eq("reserva_id", reserva?.id);
-
-    if (error) throw new Error(error.message);
-
-    return data || [];
-  };
-
-  const { data: responsablesLimpieza, isLoading: loadingResponsables } =
-    useQuery({
-      queryKey: ["responsablesLimpieza"],
-      queryFn: fetchResponsablesLimpieza,
-      initialData: responsablesFromServer,
-    });
 
   useEffect(() => {
     if (reserva?.documentacion_huesped) {
@@ -177,19 +128,17 @@ export default function VisualizarReserva({
   const infoLimpiezaFields = [
     {
       subtitle: "Viatico",
-      value: `${reserva?.destino_viatico.nombre ? "Sí" : "No"}`,
+      value: `${reserva?.destino_viatico ? "Sí" : "No"}`,
     },
     {
       subtitle: "Destino viatico",
-      value: `${reserva?.destino_viatico.nombre}`,
+      value: `${reserva?.destino_viatico?.nombre || "-"}`,
     },
     {
       subtitle: "Fichas de lavandería",
-      value: `${reserva?.cantidad_fichas_lavadero}`,
+      value: `${reserva?.cantidad_fichas_lavadero || "-"}`,
     },
   ];
-
-  if (loadingReserva || loadingResponsables) return <Spinner />;
 
   const statusProps = getStatusProps(reserva?.estado_reserva);
 
@@ -245,9 +194,16 @@ export default function VisualizarReserva({
                   <div className="self-center">
                     <button
                       onClick={handleDownload}
-                      className="text-secondary-500 hover:text-secondary-600 hover:underline font-semibold text-sm">
+                      disabled={!fileUrl}
+                      type="button"
+                      className="text-secondary-500 disabled:text-gray-500 enabled:hover:text-secondary-600 enabled:hover:underline font-semibold text-sm">
                       <span className="flex items-center gap-x-2">
-                        <Download className="w-4 h-4 text-secondary-600" />
+                        <Download
+                          className={clsx(
+                            "w-4 h-4",
+                            !fileUrl ? "text-gray-500" : "text-secondary-600"
+                          )}
+                        />
                         Descargar documentación
                       </span>
                     </button>

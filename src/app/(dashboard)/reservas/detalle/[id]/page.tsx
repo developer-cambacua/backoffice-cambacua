@@ -15,11 +15,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               responsable_limpieza:usuarios!reservas_responsable_limpieza_fkey(nombre, apellido),
               destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
     )
-    .eq("id", params.id)
+    .eq("id", Number(params.id))
     .neq("estado_reserva", "cancelado")
     .single();
-
-    console.log(reserva)
 
   if (errorReserva) throw new Error(errorReserva.message);
 
@@ -41,6 +39,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <VisualizarReserva
+      id={params.id}
       reservaFromServer={reserva}
       responsablesFromServer={responsablesData}
     />

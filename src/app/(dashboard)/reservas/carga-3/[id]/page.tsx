@@ -1,10 +1,9 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import CargaTres from "./CargaTres";
-import { fetchDepartamentos, fetchEmpleados } from "@/utils/functions/fetchs";
 import { reservasSelect } from "@/utils/supabase/querys";
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -22,18 +21,17 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 
   const { data: departamentos, error: departamentosFetchError } = await supabase
-    .from("reservas")
-    .select(reservasSelect)
-    .eq("id", reservaId)
-    .single();
+    .from("departamentos")
+    .select(`*, usuario:usuarios(*)`)
+    .order("id", { ascending: false });
 
   if (departamentosFetchError) throw new Error(departamentosFetchError.message);
 
   const { data: empleados, error: empleadosFetchError } = await supabase
-    .from("reservas")
-    .select(reservasSelect)
-    .eq("id", reservaId)
-    .single();
+    .from("usuarios")
+    .select(`nombre, apellido, id`)
+    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin"])
+    .eq("isActive", true);
 
   if (empleadosFetchError) throw new Error(empleadosFetchError.message);
 

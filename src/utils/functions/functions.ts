@@ -386,3 +386,34 @@ export function generarNumeroReserva(): string {
   const random = crypto.getRandomValues(new Uint32Array(1))[0];
   return `R${random.toString().padStart(9, "0")}`;
 }
+
+export function normalizarHoraInput(value: string | null): string | null {
+  if (!value) return null;
+  const limpio = value.trim();
+
+  if (!limpio) return null;
+
+  if (limpio.includes(":")) {
+    const [hhRaw, mmRaw = ""] = limpio.split(":");
+    const hh = hhRaw.padStart(2, "0").slice(0, 2);
+    const mm = mmRaw.padEnd(2, "0").slice(0, 2);
+    return `${hh}:${mm}`;
+  }
+
+  const soloNumeros = limpio.replace(/\D/g, "");
+  if (soloNumeros.length <= 2) return `${soloNumeros.padStart(2, "0")}:00`;
+
+  const hh = soloNumeros.slice(0, 2).padStart(2, "0");
+  const mm = soloNumeros.slice(2, 4).padEnd(2, "0");
+  return `${hh}:${mm}`;
+}
+
+export function esHoraValida(value: string | null): boolean {
+  if (!value) return false;
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return false;
+  const [_, hh, mm] = match;
+  const h = parseInt(hh, 10);
+  const m = parseInt(mm, 10);
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}

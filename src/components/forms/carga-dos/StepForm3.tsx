@@ -1,7 +1,7 @@
 import Image from "next/image";
 import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
 
-import { TimeInput } from "@/components/inputs/TimeInput";
+import { TimeInput } from "@/backup/TimeInput";
 import { SelectedGuest } from "@/types/supabaseTypes";
 import {
   Control,
@@ -11,6 +11,7 @@ import {
 } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { normalizarHoraInput } from "@/utils/functions/functions";
 
 interface IStepForm3 {
   appReserva: string;
@@ -20,16 +21,16 @@ interface IStepForm3 {
   register: UseFormRegister<any>;
   control: Control<any>;
   errors: FieldErrors<any>;
+  setValue: any;
 }
 
 export const StepForm3 = ({
   appReserva,
   adicionalHuesped,
   solicitudCochera,
-  selectedGuest,
-  register,
   control,
   errors,
+  setValue,
 }: IStepForm3) => {
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -42,10 +43,15 @@ export const StepForm3 = ({
             name="check_in"
             control={control}
             render={({ field }) => (
-              <TimeInput
+              <Input
                 {...field}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  const normalizado = normalizarHoraInput(value);
+                  setValue("check_in", normalizado);
+                }}
                 error={!!errors.check_in}
-                onChange={(value) => field.onChange(value)}
+                aria-invalid={errors.check_in ? "true" : "false"}
               />
             )}
           />
@@ -68,10 +74,15 @@ export const StepForm3 = ({
             name="check_out"
             control={control}
             render={({ field }) => (
-              <TimeInput
+              <Input
                 {...field}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  const normalizado = normalizarHoraInput(value);
+                  setValue("check_out", normalizado);
+                }}
                 error={!!errors.check_out}
-                onChange={(value) => field.onChange(value)}
+                aria-invalid={errors.check_out ? "true" : "false"}
               />
             )}
           />

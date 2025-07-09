@@ -10,11 +10,15 @@ import { DateRange } from "react-day-picker";
 
 import { apps } from "@/constants/appsReserva";
 
-import { TimeInput } from "@/components/inputs/TimeInput";
 import { NewSelect } from "@/components/select/NewSelect";
 import { Input } from "@/components/ui/input";
 import { DatePickerWithRange } from "@/components/datePicker/DatePickerWithRange";
-import { generarNumeroReserva } from "@/utils/functions/functions";
+import {
+  generarNumeroReserva,
+  normalizarHoraInput,
+} from "@/utils/functions/functions";
+import { useConfigStore } from "@/stores/configStore";
+import { useUserStore } from "@/stores/useUserStore";
 
 type Props = {
   register: UseFormRegister<any>;
@@ -30,6 +34,16 @@ export const StepForm2 = ({ control, errors, setRange, setValue }: Props) => {
     const numero = generarNumeroReserva();
     setValue("numero_reserva", numero);
   }
+
+  const userData = useUserStore((state) => state.user);
+  const isPrivileged = userData?.rol === "appOwner" || userData?.rol === "dev";
+  const allowPastDates = useConfigStore((s) => s.config.allow_past_dates);
+  const disabledDatesBefore = isPrivileged
+    ? undefined
+    : allowPastDates
+    ? undefined
+    : new Date();
+
   return (
     <>
       <div className="col-span-12 md:col-span-6 lg:col-span-4 2xl:col-span-3">
@@ -127,7 +141,7 @@ export const StepForm2 = ({ control, errors, setRange, setValue }: Props) => {
                   field.onChange(newRange);
                   setRange(newRange);
                 }}
-                disabledDatesBefore={new Date()}
+                disabledDatesBefore={disabledDatesBefore}
               />
             )}
           />
@@ -148,10 +162,15 @@ export const StepForm2 = ({ control, errors, setRange, setValue }: Props) => {
             name="check_in"
             control={control}
             render={({ field }) => (
-              <TimeInput
+              <Input
                 {...field}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  const normalizado = normalizarHoraInput(value);
+                  setValue("check_in", normalizado);
+                }}
                 error={!!errors.check_in}
-                onChange={(value) => field.onChange(value)}
+                aria-invalid={errors.check_in ? "true" : "false"}
               />
             )}
           />
@@ -172,10 +191,15 @@ export const StepForm2 = ({ control, errors, setRange, setValue }: Props) => {
             name="check_out"
             control={control}
             render={({ field }) => (
-              <TimeInput
+              <Input
                 {...field}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  const normalizado = normalizarHoraInput(value);
+                  setValue("check_out", normalizado);
+                }}
                 error={!!errors.check_out}
-                onChange={(value) => field.onChange(value)}
+                aria-invalid={errors.check_out ? "true" : "false"}
               />
             )}
           />

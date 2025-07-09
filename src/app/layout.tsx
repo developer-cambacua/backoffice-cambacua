@@ -10,13 +10,13 @@ import { Providers } from "./Providers";
 import { AlertProvider } from "@/context/AlertContext";
 
 import { FormProvider } from "@/context/FormContext";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import QueryProvider from "@/context/QueryProvider";
 import { UserInitializer } from "@/providers/UserInitializer";
 import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import ConfigLoader from "@/providers/ConfigLoader";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -42,14 +42,15 @@ export default function RootLayout({
           <AlertProvider>
             <QueryProvider>
               <UserInitializer />
+              <ConfigLoader />
               <html lang="es" className="antialiased">
                 <body
                   className={`${openSans.variable} ${GeistSans.variable} ${GeistMono.variable} text-secondary-950 font-openSans bg-slate-50`}>
-                  <AntdRegistry>{children}</AntdRegistry>
+                  {children}
                   <ReactQueryDevtools initialIsOpen={false} />
                   <Toaster position="top-right" richColors closeButton />
-                  <Analytics />
-                  <SpeedInsights />
+                  {/* <Analytics />
+                  <SpeedInsights /> */}
                 </body>
               </html>
             </QueryProvider>
