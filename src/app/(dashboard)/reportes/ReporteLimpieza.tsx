@@ -58,12 +58,19 @@ export const ReporteLimpieza = ({
         return true; // incluir reserva si hay al menos un responsable
       })
       .reduce((total, reg) => {
-        const tiempo = reg.tiempo_limpieza;
-        if (!tiempo) return total;
+        const responsables = responsablesDeLimpieza.filter(
+          (r) =>
+            r.reserva_id === reg.id &&
+            (selectedEmpleado ? r.empleado?.id === selectedEmpleado : true)
+        );
+        if (responsables.length === 0) return total;
 
-        return total + parseTiempoLimpieza(tiempo);
+        const sumaResponsables = responsables.reduce(
+          (sum, r) => sum + parseTiempoLimpieza(r.tiempo_limpieza),
+          0
+        );
+        return total + sumaResponsables;
       }, 0);
-
     return { horas };
   };
 
@@ -123,16 +130,16 @@ export const ReporteLimpieza = ({
             <p>{row.departamento ? row.departamento.nombre : "-"}</p>
           </td>
           <td className={renderRowClass}>
-            <p>{`${row.hora_ingreso_limpieza ?? "-"}hs`}</p>
+            <p>{`${asignacion.hora_ingreso ?? "-"}hs`}</p>
           </td>
           <td className={renderRowClass}>
-            <p>{`${row.hora_egreso_limpieza ?? "-"}hs`}</p>
+            <p>{`${asignacion.hora_egreso ?? "-"}hs`}</p>
           </td>
           <td className={renderRowClass}>
-            <p>{`${row.tiempo_limpieza ?? "-"}hs`}</p>
+            <p>{`${asignacion.tiempo_limpieza ?? "-"}hs`}</p>
           </td>
           <td className={renderRowClass}>
-            <p>{row.notas ? row.notas : "-"}</p>
+            <p>{asignacion.notas ?? "-"}</p>
           </td>
         </tr>
       );
@@ -176,7 +183,7 @@ export const ReporteLimpieza = ({
             return (
               <Link
                 href={`/reportes/limpieza/${month.value}${selectedYear}`}
-                key={`limpieza-mes-${index}]`}
+                key={`limpieza-mes-${index}`}
                 className="col-span-12 sm:col-span-6 lg:col-span-4 xl:col-span-3 2xl:col-span-2">
                 <div
                   className={`group bg-white cursor-pointer shadow-sm outline ${

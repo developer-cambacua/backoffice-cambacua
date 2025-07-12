@@ -61,11 +61,14 @@ export default function Page() {
     const { data, error } = await supabase.from("responsables_limpieza")
       .select(`
         reserva_id,
-    empleado:empleado_id (
-      id,
-      nombre,
-      apellido
-    )
+        tiempo_limpieza,
+        hora_ingreso,
+        hora_egreso,
+        empleado:empleado_id (
+          id,
+          nombre,
+          apellido
+        )
   `);
 
     if (error) throw new Error(error.message);

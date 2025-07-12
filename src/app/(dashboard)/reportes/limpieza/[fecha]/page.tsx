@@ -81,11 +81,14 @@ export default function Page() {
     const { data, error } = await supabase.from("responsables_limpieza")
       .select(`
         reserva_id,
-    empleado:empleado_id (
-      id,
-      nombre,
-      apellido
-    )
+        tiempo_limpieza,
+        hora_ingreso,
+        hora_egreso,
+        empleado:empleado_id (
+          id,
+          nombre,
+          apellido
+        )
   `);
 
     if (error) throw new Error(error.message);
@@ -179,15 +182,15 @@ export default function Page() {
           fechaCheckOut.getMonth() + 1 === mes &&
           fechaCheckOut.getFullYear() === año
         ) {
-          const horas = parseTiempoLimpieza(tiempoLimpieza);
-
-          // Filtrar los responsables asociados a esta reserva
           const responsablesDeEstaReserva = responsablesDeLimpieza.filter(
             (r) => r.reserva_id === reserva.id
           );
 
           responsablesDeEstaReserva.forEach((asignacion: any) => {
-            const empleadoId = asignacion.empleado.id;
+            const empleadoId = asignacion.empleado?.id;
+            const tiempo = asignacion.tiempo_limpieza;
+            const horas = parseTiempoLimpieza(tiempo);
+
             if (empleadoId && records[empleadoId]) {
               records[empleadoId].totalHoras += horas;
             }
@@ -233,7 +236,7 @@ export default function Page() {
             ? `${empleado.nombre} ${empleado.apellido}`
             : "No hay",
           departamento: reserva.departamento?.nombre || "",
-          duracion: reserva.tiempo_limpieza || "",
+          duracion: asignacion.tiempo_limpieza || "",
           fichas: reserva.cantidad_fichas_lavadero || 0,
           notas: "",
         });
@@ -280,7 +283,7 @@ export default function Page() {
           <p>{row.label}</p>
         </td>
         <td className={renderRowClass}>
-          <p>{row.totalHoras}</p>
+          <p>{`${row.totalHoras.toFixed(2)}hs`}</p>
         </td>
       </tr>
     );
@@ -301,7 +304,7 @@ export default function Page() {
           <p>{row.departamento}</p>
         </td>
         <td className={renderRowClass}>
-          <p>{row.duracion}</p>
+          <p>{`${row.duracion}hs`}</p>
         </td>
         <td className={renderRowClass}>
           <p>{row.fichas}</p>

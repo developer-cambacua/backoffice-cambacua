@@ -62,7 +62,7 @@ export default function Page() {
           await supabase
             .from("reservas")
             .select(
-              `*, responsable_limpieza:usuarios!reservas_responsable_limpieza_fkey (*), huesped:huespedes(*)`
+              `*, huesped:huespedes(*)`
             )
             .eq("departamento_id", deptoId);
 
