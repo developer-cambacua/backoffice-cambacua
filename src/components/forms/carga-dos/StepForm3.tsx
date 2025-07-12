@@ -1,7 +1,5 @@
 import Image from "next/image";
 import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
-
-import { TimeInput } from "@/backup/TimeInput";
 import { SelectedGuest } from "@/types/supabaseTypes";
 import {
   Control,
