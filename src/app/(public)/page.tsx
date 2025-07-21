@@ -53,7 +53,7 @@ export default function Home() {
           </button>
           <div className="my-4 md:max-w-md bg-gray-100 p-4 rounded-md shadow-sm">
             <p className="text-xs text-gray-500">
-              Esta aplicación está destinada al personal del Cambacuá B&B para
+              Esta aplicación está destinada al personal de Cambacuá B&B para
               gestionar reservas, pagos y tareas de limpieza. El inicio de
               sesión con Google se utiliza exclusivamente para autenticar a los
               usuarios autorizados. No se accede a información adicional del
