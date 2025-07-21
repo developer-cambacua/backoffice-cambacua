@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const {data: empleados, error: errorFetchEmpleados} = await supabase
       .from("usuarios")
       .select(`nombre, apellido, id`)
-      .in("rol", ["admin", "limpieza", "appOwner", "superAdmin"])
+      .in("rol", ["admin", "limpieza", "appOwner", "superAdmin", "propietario"])
       .eq("isActive", true);
   
     if (errorFetchEmpleados) throw new Error(errorFetchEmpleados.message);

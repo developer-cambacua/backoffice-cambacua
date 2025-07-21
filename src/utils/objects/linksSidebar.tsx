@@ -45,7 +45,7 @@ export const linkSidebar: ISidebar[] = [
     getIcon: getSettingsIcon,
     link: "/configuracion",
     roles: ["appOwner", "dev"],
-    disabled: true,
+    disabled: false,
   },
 ];
 

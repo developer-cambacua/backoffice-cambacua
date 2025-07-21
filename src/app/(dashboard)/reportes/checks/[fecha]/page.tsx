@@ -93,13 +93,11 @@ export default function Page() {
   const { data: reservas, isLoading: loadingReservas } = useQuery({
     queryKey: ["reservas"],
     queryFn: fetchReservas,
-    staleTime: Infinity,
   });
 
   const { data: empleados, isLoading: loadingEmpleados } = useQuery({
     queryKey: ["empleados"],
     queryFn: fetchEmpleados,
-    staleTime: Infinity,
   });
 
   useEffect(() => {

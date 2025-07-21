@@ -9,12 +9,14 @@ export default function Home() {
       <div className="grid grid-cols-12 h-full">
         <div className="col-span-12 md:col-span-6 lg:col-span-6 content-center">
           <div className="space-y-4">
-            <h1 className="font-semibold text-2xl sm:text-4xl">Backoffice Cambacuá</h1>
+            <h1 className="font-semibold text-2xl sm:text-4xl">
+              Backoffice Cambacuá
+            </h1>
             <p>Accede al sitio de gestiones de Cambacuá B&B</p>
           </div>
           <button
             type="button"
-            className="flex items-center justify-center gap-3 box-shadow-1 mt-4 py-4 px-8 md:px-12 lg:px-20 bg-white text-lg rounded-lg border-2 border-transparent hover:border-gray-300 transition-colors"
+            className="flex items-center justify-center gap-3 box-shadow-1 mt-4 py-4 px-8 md:px-12 lg:px-20 bg-white text-lg rounded-lg border-2 border-transparent hover:border-gray-300 transition-colors w-full md:w-fit"
             onClick={async () => {
               await signIn("google", {
                 redirect: false,
@@ -49,6 +51,15 @@ export default function Home() {
             </svg>
             Ingresá con tu cuenta
           </button>
+          <div className="my-4 md:max-w-md bg-gray-100 p-4 rounded-md shadow-sm">
+            <p className="text-xs text-gray-500">
+              Esta aplicación está destinada al personal del Cambacuá B&B para
+              gestionar reservas, pagos y tareas de limpieza. El inicio de
+              sesión con Google se utiliza exclusivamente para autenticar a los
+              usuarios autorizados. No se accede a información adicional del
+              perfil del usuario ni se comparte con terceros.
+            </p>
+          </div>
         </div>
         <div className="hidden md:block col-span-12 md:col-span-6 lg:col-span-6 content-center justify-self-center">
           <img src={ImgIndex.src} alt="" />

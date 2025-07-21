@@ -16,7 +16,7 @@ export const fetchEmpleados = async () => {
   const { data, error } = await supabase
     .from("usuarios")
     .select(`nombre, apellido, id`)
-    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin"])
+    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin", "propietario"])
     .eq("isActive", true);
 
   if (error) throw new Error(error.message);
