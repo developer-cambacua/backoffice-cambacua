@@ -148,12 +148,6 @@ export const zodRSchema2 = z.object({
   tipo_identificacion: z
     .enum(["DNI", "Pasaporte", "Cédula", "Otros"])
     .default("DNI"),
-  // numero_identificacion: z
-  //   .string()
-  //   .min(1, "Este campo es obligatorio")
-  //   .regex(/^\d{7,8}$/, "Solo se permiten números")
-  //   .min(7, "El DNI debe tener al menos 7 dígitos")
-  //   .max(10, "Ingresá un DNI válido"),
   numero_identificacion: z
     .string()
     .min(1, "Este campo es obligatorio")

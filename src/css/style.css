@@ -1405,10 +1405,6 @@ body {
   max-width: var(--skeleton-width);
 }
 
-.max-w-\[24ch\] {
-  max-width: 24ch;
-}
-
 .max-w-\[250px\] {
   max-width: 250px;
 }
@@ -1451,10 +1447,6 @@ body {
 
 .max-w-xl {
   max-width: 36rem;
-}
-
-.max-w-\[48ch\] {
-  max-width: 48ch;
 }
 
 .flex-1 {
@@ -2113,6 +2105,11 @@ body {
   background-color: hsl(var(--destructive));
 }
 
+.bg-gray-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+}
+
 .bg-gray-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
@@ -2283,11 +2280,6 @@ body {
 .bg-yellow-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 252 232 / var(--tw-bg-opacity));
-}
-
-.bg-gray-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
 }
 
 .bg-gradient-to-r {
@@ -4859,10 +4851,6 @@ body {
     max-width: 24rem;
   }
 
-  .sm\:max-w-md {
-    max-width: 28rem;
-  }
-
   .sm\:flex-row {
     flex-direction: row;
   }
@@ -5192,6 +5180,10 @@ body {
   .lg\:gap-x-6 {
     -moz-column-gap: 1.5rem;
          column-gap: 1.5rem;
+  }
+
+  .lg\:gap-y-6 {
+    row-gap: 1.5rem;
   }
 
   .lg\:justify-self-end {

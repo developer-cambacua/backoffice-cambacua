@@ -49,6 +49,7 @@ import { StepForm5 } from "@/components/forms/carga-dos/StepForm5";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
 import { fetchEmpleados, fetchReserva } from "@/utils/functions/fetchs";
+import { Loader2 } from "lucide-react";
 
 export default function CargaDos({
   reservaFromServer,
@@ -59,13 +60,11 @@ export default function CargaDos({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [loadingDolar, setLoadingDolar] = useState<boolean>(true);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [currentSchema, setCurrentSchema] = useState(z.object({}));
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<FormData>>({});
-  const [exchangeRate, setExchangeRate] = useState<IDolar[] | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<SelectedGuest | null>(
     null
   );
@@ -89,7 +88,6 @@ export default function CargaDos({
     gcTime: 1000 * 60 * 5,
   });
 
-
   const { data: empleados } = useQuery({
     queryKey: ["empleados"],
     queryFn: fetchEmpleados,
@@ -97,21 +95,35 @@ export default function CargaDos({
     initialData: empleadosFromServer,
   });
 
-  useEffect(() => {
-    const fetchExchangeRate = async () => {
-      try {
-        setLoadingDolar(true);
-        const response = await axios.get("https://dolarapi.com/v1/dolares");
-        setExchangeRate(response.data);
-      } catch (err: any) {
-        toast.error(err);
-      } finally {
-        setLoadingDolar(false);
-      }
-    };
+  const fetchDolar = async () => {
+    const { data } = await axios.get("https://dolarapi.com/v1/dolares");
+    return data;
+  };
 
-    fetchExchangeRate();
-  }, []);
+  const {
+    data: exchangeRate,
+    isLoading: loadingDolar,
+    isError: errorDolar,
+  } = useQuery({
+    queryKey: ["tipo-de-cambio"],
+    queryFn: fetchDolar,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (errorDolar) {
+      toast.custom(
+        (id) => (
+          <Toast id={id} variant="error">
+            <div>
+              <p>{`Ha ocurrido un error consultando la información del Dolar.`}</p>
+            </div>
+          </Toast>
+        ),
+        { duration: 5000 }
+      );
+    }
+  }, [errorDolar]);
 
   /* --------------------------------------------------------------------------- */
 
@@ -782,11 +794,9 @@ export default function CargaDos({
                                     filteredCurrencies={filteredCurrencies}
                                     exchangeRate={exchangeRate}
                                     loadingDolar={loadingDolar}
-                                    register={register}
                                     control={control}
                                     setValue={setValue}
                                     errors={errors}
-                                    date={date}
                                     setDate={setDate}
                                   />
                                 )}
@@ -843,7 +853,14 @@ export default function CargaDos({
                             variant="solid"
                             type="submit"
                             disabled={disabled}>
-                            Finalizar carga
+                            {disabled ? (
+                              <span className="flex items-center gap-x-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Cargando...
+                              </span>
+                            ) : (
+                              "Finalizar carga"
+                            )}
                           </Button>
                         )}
                       </div>

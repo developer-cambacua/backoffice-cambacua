@@ -24,24 +24,20 @@ interface IStepForm4 {
   filteredCurrencies: any;
   exchangeRate: IDolar[] | null;
   loadingDolar: boolean;
-  register: UseFormRegister<any>;
   control: Control<any>;
   errors: FieldErrors<any>;
   setValue: UseFormSetValue<any>;
-  date: Date | undefined;
   setDate: (value: Date | undefined) => void;
 }
 
 export const StepForm4 = ({
   empleados,
   filteredCurrencies,
-  register,
   control,
   errors,
   setValue,
   exchangeRate,
   loadingDolar,
-  date,
   setDate,
 }: IStepForm4) => {
   return (
@@ -106,7 +102,9 @@ export const StepForm4 = ({
                         <span className="text-xs">
                           Fuente:{" "}
                           <Link
-                            href={"https://dolarapi.com/docs/argentina/operations/get-dolares.html#ejemplos-de-uso"}
+                            href={
+                              "https://dolarapi.com/docs/argentina/operations/get-dolares.html#ejemplos-de-uso"
+                            }
                             className="text-primary-500 hover:underline hover:text-primary-600">
                             DolarApi
                           </Link>

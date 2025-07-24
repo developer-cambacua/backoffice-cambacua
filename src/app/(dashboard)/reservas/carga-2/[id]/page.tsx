@@ -28,5 +28,5 @@ export default async function Page({ params }: { params: { id: string } }) {
   
     if (errorFetchEmpleados) throw new Error(errorFetchEmpleados.message);
 
-  return <CargaDos reservaFromServer={data} empleadosFromServer={empleados}/>;
+  return <CargaDos reservaFromServer={data} empleadosFromServer={empleados} />;
 }

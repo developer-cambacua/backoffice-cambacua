@@ -169,10 +169,3 @@ export function calculateReservation(
   const result = config.formula(amount, rates);
   return parseFloat(result.toFixed(2));
 }
-
-//   const amount = 160;
-//   const method: PaymentMethod = "TRANSFERENCIA";
-//   const currency: Currency = "ARS";
-//   const collector: Collector = "TAMARA";
-
-//   calculateReservation(method, currency, amount, exchangeRates, collector);

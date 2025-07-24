@@ -255,7 +255,7 @@ export default function Page() {
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
       }
       setIsOpen(false);
@@ -269,7 +269,7 @@ export default function Page() {
             </div>
           </Toast>
         ),
-        { duration: 7500 }
+        { duration: 5000 }
       );
     } finally {
       setDisabled(false);
@@ -348,7 +348,7 @@ export default function Page() {
         </div>
         <div className="col-span-12 mt-4 sm:mt-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-y-4">
-            <div className="flex items-center gap-x-2 px-2 border-2 rounded-md min-w-80 bg-white">
+            <div className="flex items-center gap-x-2 px-2 outline outline-1 outline-gray-300 hover:outline-secondary-600 rounded-md min-w-80 bg-white transition-[outline] focus:outline-secondary-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="32"
@@ -363,7 +363,7 @@ export default function Page() {
                 name="search"
                 id="search"
                 placeholder="Buscar departamento"
-                className="w-full outline-none py-2"
+                className="w-full outline-none py-2 self-start"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -401,7 +401,7 @@ export default function Page() {
                 }
               />
               <Modal.Main>
-                <div className="grid grid-cols-12 gap-y-2 md:gap-x-4 lg:gap-x-6">
+                <div className="grid grid-cols-12 gap-y-2 lg:gap-y-6 md:gap-x-4 lg:gap-x-6">
                   <div className="col-span-12 md:col-span-6">
                     <div className="input-container-alt">
                       <label

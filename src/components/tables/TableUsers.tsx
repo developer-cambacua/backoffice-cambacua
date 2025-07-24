@@ -65,7 +65,7 @@ export const TableUsers = ({
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
       } else {
         toast.custom(
@@ -79,7 +79,7 @@ export const TableUsers = ({
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
       }
     } catch (error: any) {
@@ -91,7 +91,7 @@ export const TableUsers = ({
             </div>
           </Toast>
         ),
-        { duration: 7500 }
+        { duration: 5000 }
       );
       console.error(error);
     } finally {
@@ -153,7 +153,7 @@ export const TableUsers = ({
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4 sm:mt-6 gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-x-2 px-2 border-2 rounded-md min-w-80 w-full bg-white">
+          <div className="flex items-center gap-x-2 px-2 outline outline-1 outline-gray-300 hover:outline-secondary-600 rounded-md min-w-80 w-full bg-white transition-[outline] focus:outline-secondary-600">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="32"
