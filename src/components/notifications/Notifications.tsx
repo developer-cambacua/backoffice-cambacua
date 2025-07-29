@@ -41,14 +41,14 @@ const Notifications = () => {
   };
 
   const iconsByType: Record<NotificationType, JSX.Element> = {
-    info: <Info className="w-5 h-5" />,
-    success: <CheckCircle className="w-5 h-5" />,
-    warning: <AlertTriangle className="w-5 h-5" />,
-    error: <XCircle className="w-5 h-5" />,
-    in_progress: <Wrench className="w-5 h-5" />,
-    dark: <Moon className="w-5 h-5" />,
-    light: <Sun className="w-5 h-5" />,
-    special: <Star className="w-5 h-5" />,
+    info: <Info className="w-5 h-5 shrink-0" />,
+    success: <CheckCircle className="w-5 h-5 shrink-0" />,
+    warning: <AlertTriangle className="w-5 h-5 shrink-0" />,
+    error: <XCircle className="w-5 h-5 shrink-0" />,
+    in_progress: <Wrench className="w-5 h-5 shrink-0" />,
+    dark: <Moon className="w-5 h-5 shrink-0" />,
+    light: <Sun className="w-5 h-5 shrink-0" />,
+    special: <Star className="w-5 h-5 shrink-0" />,
   };
 
   const pathname = usePathname();
