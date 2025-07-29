@@ -350,6 +350,7 @@ export const transformData = <T>(data: T[], headers: IHeader[]) =>
     return flattenedItem;
   });
 
+/* Esto es para sumar las horas de limpieza, después hay que reconvertir a formato hora de nuevo asi no queda, por ej: 2:85hs en vez de 3hs y pico*/
 export const parseTiempoLimpieza = (tiempo: string): number => {
   if (!tiempo) return 0;
   const [h, m] = tiempo.split(":").map(Number);

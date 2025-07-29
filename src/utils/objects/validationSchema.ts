@@ -142,6 +142,7 @@ export const defaultValuesReservas2 = {
   quien_cobro: 0,
   responsable_check_in: 0,
   check_in_especial: "no" as const,
+  observaciones_sobre_el_pago: "",
 };
 
 export const zodRSchema2 = z.object({
@@ -264,10 +265,11 @@ export const zodRSchema2 = z.object({
   quien_cobro: z.number().min(1, "Seleccioná una opción").default(0),
   responsable_check_in: z.number().min(1, "Ingresá un responsable").default(0),
   check_in_especial: z.enum(["si", "no"]).default("no"),
-  observaciones: z
+  observaciones_pagos: z
     .string()
     .max(250, "La observación no debe exceder los 250 caracteres")
-    .nullable(),
+    .nullable()
+    .optional(),
 });
 
 /* Etapa 3 */

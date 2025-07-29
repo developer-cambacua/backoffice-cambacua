@@ -22,7 +22,6 @@ import {
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IDolar } from "@/types/dolar";
 import { currency } from "@/utils/objects/paymentMethods";
 import {
   calculateReservation,
@@ -33,7 +32,7 @@ import {
 import { SummaryPDF } from "@/components/documents/Recibo";
 
 import { checkAndCreateHuesped } from "@/utils/functions/supabaseFunctions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryObserver, useQuery, useQueryClient } from "@tanstack/react-query";
 import StepperAlt from "@/components/stepper/StepperAlt";
 import { Card } from "@/components/cards/Card";
 
@@ -344,6 +343,7 @@ export default function CargaDos({
           "quien_cobro",
           "responsable_check_in",
           "check_in_especial",
+          "observaciones_pagos",
         ],
       },
       {
@@ -481,6 +481,7 @@ export default function CargaDos({
           responsable_check_in: data.responsable_check_in,
           responsable_check_out: data.responsable_check_out,
           check_in_especial: data.check_in_especial === "no" ? false : true,
+          observaciones_pagos: data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
           valor_dolar_oficial: stringToFloat(data.valor_dolar_oficial),
           valor_dolar_blue: stringToFloat(data.valor_dolar_blue),
           medio_de_pago: data.medio_de_pago,

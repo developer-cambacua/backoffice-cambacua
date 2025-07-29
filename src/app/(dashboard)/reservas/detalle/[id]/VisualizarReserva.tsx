@@ -162,7 +162,7 @@ export default function VisualizarReserva({
       </div>
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-6">
-          <div className="bg-white outline outline-1 outline-gray-200 px-6 py-4 rounded-lg">
+          <div className="bg-white outline outline-1 outline-gray-200 px-6 py-4 rounded-lg lg:h-full">
             <div className="flex flex-col gap-y-2">
               <div className="flex items-center justify-between gap-1">
                 <h1 className="font-semibold text-2xl">
@@ -243,6 +243,16 @@ export default function VisualizarReserva({
                     <p className="text-sm font-semibold">Cochera</p>
                     <p className="text-sm text-gray-500">{`${
                       reserva?.media_estadia ? "Sí" : "No"
+                    }`}</p>
+                  </div>
+                  <div className="col-span-12 sm:col-span-6">
+                    <p className="text-sm font-semibold">
+                      Observaciones del pago
+                    </p>
+                    <p className="text-sm text-gray-500">{`${
+                      reserva?.observaciones_pagos
+                        ? reserva.observaciones_pagos
+                        : "-"
                     }`}</p>
                   </div>
                 </div>

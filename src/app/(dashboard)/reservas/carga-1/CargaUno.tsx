@@ -107,7 +107,6 @@ export default function CargaUno({
           "valor_comision_app",
           "extra_check",
           "media_estadia",
-          "observaciones",
         ],
       },
       {

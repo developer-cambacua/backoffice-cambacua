@@ -6,7 +6,6 @@ import { PopoverComponent } from "@/components/popover/Popover";
 import {
   Controller,
   FieldErrors,
-  UseFormRegister,
   Control,
   UseFormSetValue,
 } from "react-hook-form";
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { NewSelect } from "@/components/select/NewSelect";
 import { DatePickerSingle } from "@/components/datePicker/DatePickerSingle";
+import TextArea from "@/components/inputs/Textarea";
 
 interface IStepForm4 {
   empleados: any[];
@@ -503,6 +503,15 @@ export const StepForm4 = ({
             />
           </div>
         </div>
+      </div>
+      <div className="col-span-12 lg:col-span-8 2xl:col-span-6">
+        <TextArea
+          name="observaciones_pagos"
+          label="Observaciones sobre el pago"
+          control={control}
+          maxLength={250}
+          placeholder="Ej: Huésped abona al contado en dólares; huésped tiene descuento por X motivo..."
+        />
       </div>
     </div>
   );

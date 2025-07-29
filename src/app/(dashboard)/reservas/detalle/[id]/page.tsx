@@ -11,9 +11,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const { data: reserva, error: errorReserva } = await supabase
     .from("reservas")
     .select(
-      `*, departamento:departamentos!reservas_departamento_id_fkey(*), huesped:huespedes(*), responsable_check_in:usuarios!reservas_responsable_check_in_fkey(nombre, apellido), responsable_check_out:usuarios!reservas_responsable_check_out_fkey(nombre, apellido),
-              responsable_limpieza:usuarios!reservas_responsable_limpieza_fkey(nombre, apellido),
-              destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
+      `*, departamento:departamentos!reservas_departamento_id_fkey(*), huesped:huespedes(*), responsable_check_in:usuarios!reservas_responsable_check_in_fkey(nombre, apellido), responsable_check_out:usuarios!reservas_responsable_check_out_fkey(nombre, apellido), destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
     )
     .eq("id", Number(params.id))
     .neq("estado_reserva", "cancelado")

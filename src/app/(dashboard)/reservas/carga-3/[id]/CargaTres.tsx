@@ -343,7 +343,7 @@ export default function CargaTres({
                   <div className="grid grid-cols-12 gap-6">
                     {currentStep === 0 && (
                       <>
-                        <div className="col-span-12 lg:col-span-8 2xl:col-span-6">
+                        <div className="col-span-12 lg:col-span-7 2xl:col-span-6">
                           <div
                             className={`outline outline-1 outline-gray-200 bg-white rounded-md`}>
                             <div className="bg-slate-100 py-4 px-6">
@@ -356,7 +356,7 @@ export default function CargaTres({
                             </div>
                             <div className="grid grid-cols-12 gap-2 md:gap-6 py-4 px-6">
                               <div className="col-span-12 lg:col-span-6">
-                                <div className="input-container">
+                                <div className="input-container-alt">
                                   <label data-required>
                                     Responsable check out
                                   </label>
@@ -438,6 +438,25 @@ export default function CargaTres({
                             </div>
                           </div>
                         </div>
+                        {reserva.observaciones_pagos && (
+                          <div className="col-span-12 lg:col-span-5 2xl:col-span-6">
+                            <div
+                              className={`outline outline-1 outline-gray-200 bg-white rounded-md lg:h-full`}>
+                              <div className="bg-slate-100 py-4 px-6">
+                                <div className="flex flex-wrap items-center justify-between gap-1">
+                                  <h2 className="font-semibold">
+                                    Observaciones del pago
+                                  </h2>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-12 gap-2 md:gap-6 py-4 px-6 h-full">
+                                <div className="col-span-12">
+                                  <p>{reserva.observaciones_pagos}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         <div className="col-span-12">
                           <div
                             className={`border-2 border-gris-50 bg-white rounded-md`}>
@@ -479,218 +498,138 @@ export default function CargaTres({
                                   {/* StepForm1 */}
                                   <>
                                     {responsablesFields.map((field, index) => (
-                                      <>
-                                        <div
-                                          key={field.id}
-                                          className="grid grid-cols-12 gap-y-6 gap-x-2 md:gap-6">
-                                          <div className="col-span-12">
-                                            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
-                                              <h3 className="font-bold sm:text-lg">
-                                                Responsable de limpieza #
-                                                {index + 1}
-                                              </h3>
-                                              <Button
-                                                title={
-                                                  responsablesFields.length ===
-                                                  1
-                                                    ? ""
-                                                    : "Quitar responsable"
-                                                }
-                                                aria-label={
-                                                  responsablesFields.length ===
-                                                  1
-                                                    ? ""
-                                                    : "Quitar responsable"
-                                                }
-                                                variant="ghost"
-                                                color="error"
-                                                width="responsive"
-                                                disabled={
-                                                  responsablesFields.length ===
-                                                  1
-                                                }
-                                                type="button"
-                                                onClick={() => remove(index)}>
-                                                <span className="flex items-center justify-center md:justify-start gap-2 text-sm">
-                                                  <MinusCircle size={16} />
-                                                  Quitar
-                                                </span>
-                                              </Button>
-                                            </div>
+                                      <div
+                                        key={field.id}
+                                        className="grid grid-cols-12 gap-y-6 gap-x-2 md:gap-6">
+                                        <div className="col-span-12">
+                                          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                                            <h3 className="font-bold sm:text-lg">
+                                              Responsable de limpieza #
+                                              {index + 1}
+                                            </h3>
+                                            <Button
+                                              title={
+                                                responsablesFields.length === 1
+                                                  ? ""
+                                                  : "Quitar responsable"
+                                              }
+                                              aria-label={
+                                                responsablesFields.length === 1
+                                                  ? ""
+                                                  : "Quitar responsable"
+                                              }
+                                              variant="ghost"
+                                              color="error"
+                                              width="responsive"
+                                              disabled={
+                                                responsablesFields.length === 1
+                                              }
+                                              type="button"
+                                              onClick={() => remove(index)}>
+                                              <span className="flex items-center justify-center md:justify-start gap-2 text-sm">
+                                                <MinusCircle size={16} />
+                                                Quitar
+                                              </span>
+                                            </Button>
                                           </div>
-                                          <div className="col-span-12 md:col-span-6 lg:col-span-4">
+                                        </div>
+                                        <div className="col-span-12 md:col-span-6 lg:col-span-4">
+                                          <label
+                                            className="inline-block mb-1 font-bold"
+                                            data-required
+                                            htmlFor={
+                                              `responsables_limpieza.${index}.empleado_id` as const
+                                            }>
+                                            Responsable de limpieza
+                                          </label>
+                                          <Controller
+                                            name={
+                                              `responsables_limpieza.${index}.empleado_id` as const
+                                            }
+                                            control={control}
+                                            defaultValue={field.empleado_id}
+                                            render={({
+                                              field: controllerField,
+                                            }) => {
+                                              const empleadosSeleccionadosSinEstaFila =
+                                                responsablesFields
+                                                  ? responsablesFields
+                                                      .filter(
+                                                        (_, i) => i !== index
+                                                      )
+                                                      .map((r) => r.empleado_id)
+                                                      .filter(
+                                                        (id) => id && id !== 0
+                                                      )
+                                                  : [];
+
+                                              const empleadosDisponibles =
+                                                listaEmpleados?.filter(
+                                                  (empleado) =>
+                                                    !empleadosSeleccionadosSinEstaFila.includes(
+                                                      empleado.value
+                                                    )
+                                                );
+
+                                              return (
+                                                <NewSelect
+                                                  listValues={
+                                                    empleadosDisponibles || []
+                                                  }
+                                                  onChange={(val) =>
+                                                    controllerField.onChange(
+                                                      val
+                                                    )
+                                                  }
+                                                  value={
+                                                    controllerField.value || ""
+                                                  }
+                                                  errors={
+                                                    !!errors
+                                                      .responsables_limpieza?.[
+                                                      index
+                                                    ]?.empleado_id
+                                                  }
+                                                  placeholder="Seleccioná un empleado"
+                                                />
+                                              );
+                                            }}
+                                          />
+                                          {errors.responsables_limpieza?.[index]
+                                            ?.empleado_id && (
+                                            <div className="flex items-center gap-x-2 ps-0.5 mt-1">
+                                              <Image
+                                                src={ErrorIcon}
+                                                alt="Icono de error"
+                                                className="size-4"
+                                              />
+                                              <p className="text-red-500 text-sm">
+                                                {
+                                                  errors.responsables_limpieza[
+                                                    index
+                                                  ]?.empleado_id?.message
+                                                }
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* 2) Hora de ingreso */}
+
+                                        <div className="col-span-12 md:col-span-6 lg:col-span-4">
+                                          <div className="flex flex-col gap-y-1">
                                             <label
-                                              className="inline-block mb-1 font-bold"
                                               data-required
-                                              htmlFor={
-                                                `responsables_limpieza.${index}.empleado_id` as const
-                                              }>
-                                              Responsable de limpieza
+                                              className="font-semibold">
+                                              Hora de ingreso limpieza
                                             </label>
                                             <Controller
                                               name={
-                                                `responsables_limpieza.${index}.empleado_id` as const
+                                                `responsables_limpieza.${index}.hora_ingreso_limpieza` as const
                                               }
                                               control={control}
-                                              defaultValue={field.empleado_id}
-                                              render={({
-                                                field: controllerField,
-                                              }) => {
-                                                const empleadosSeleccionadosSinEstaFila =
-                                                  responsablesFields
-                                                    ? responsablesFields
-                                                        .filter(
-                                                          (_, i) => i !== index
-                                                        )
-                                                        .map(
-                                                          (r) => r.empleado_id
-                                                        )
-                                                        .filter(
-                                                          (id) => id && id !== 0
-                                                        )
-                                                    : [];
-
-                                                const empleadosDisponibles =
-                                                  listaEmpleados?.filter(
-                                                    (empleado) =>
-                                                      !empleadosSeleccionadosSinEstaFila.includes(
-                                                        empleado.value
-                                                      )
-                                                  );
-
+                                              render={({ field }) => {
                                                 return (
-                                                  <NewSelect
-                                                    listValues={
-                                                      empleadosDisponibles || []
-                                                    }
-                                                    onChange={(val) =>
-                                                      controllerField.onChange(
-                                                        val
-                                                      )
-                                                    }
-                                                    value={
-                                                      controllerField.value ||
-                                                      ""
-                                                    }
-                                                    errors={
-                                                      !!errors
-                                                        .responsables_limpieza?.[
-                                                        index
-                                                      ]?.empleado_id
-                                                    }
-                                                    placeholder="Seleccioná un empleado"
-                                                  />
-                                                );
-                                              }}
-                                            />
-                                            {errors.responsables_limpieza?.[
-                                              index
-                                            ]?.empleado_id && (
-                                              <div className="flex items-center gap-x-2 ps-0.5 mt-1">
-                                                <Image
-                                                  src={ErrorIcon}
-                                                  alt="Icono de error"
-                                                  className="size-4"
-                                                />
-                                                <p className="text-red-500 text-sm">
-                                                  {
-                                                    errors
-                                                      .responsables_limpieza[
-                                                      index
-                                                    ]?.empleado_id?.message
-                                                  }
-                                                </p>
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          {/* 2) Hora de ingreso */}
-
-                                          <div className="col-span-12 md:col-span-6 lg:col-span-4">
-                                            <div className="flex flex-col gap-y-1">
-                                              <label
-                                                data-required
-                                                className="font-semibold">
-                                                Hora de ingreso limpieza
-                                              </label>
-                                              <Controller
-                                                name={
-                                                  `responsables_limpieza.${index}.hora_ingreso_limpieza` as const
-                                                }
-                                                control={control}
-                                                render={({ field }) => {
-                                                  return (
-                                                    <Input
-                                                      {...field}
-                                                      value={field.value ?? ""}
-                                                      onBlur={(e) => {
-                                                        const value =
-                                                          e.target.value;
-                                                        const normalizado =
-                                                          normalizarHoraInput(
-                                                            value
-                                                          );
-                                                        setValue(
-                                                          `responsables_limpieza.${index}.hora_ingreso_limpieza`,
-                                                          normalizado as string
-                                                        );
-                                                      }}
-                                                      error={
-                                                        !!errors
-                                                          .responsables_limpieza?.[
-                                                          index
-                                                        ]?.hora_ingreso_limpieza
-                                                      }
-                                                      aria-invalid={
-                                                        errors
-                                                          .responsables_limpieza?.[
-                                                          index
-                                                        ]?.hora_ingreso_limpieza
-                                                          ? "true"
-                                                          : "false"
-                                                      }
-                                                    />
-                                                  );
-                                                }}
-                                              />
-                                              {errors.responsables_limpieza?.[
-                                                index
-                                              ]?.hora_ingreso_limpieza && (
-                                                <div className="flex items-center gap-x-2 ps-0.5">
-                                                  <Image
-                                                    src={ErrorIcon}
-                                                    alt="Icono de error"
-                                                    className="size-4"
-                                                  />
-                                                  <p className="text-red-500 text-sm">
-                                                    {
-                                                      errors
-                                                        .responsables_limpieza[
-                                                        index
-                                                      ]?.hora_ingreso_limpieza
-                                                        ?.message
-                                                    }
-                                                  </p>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-
-                                          {/* 3) Hora de egreso */}
-
-                                          <div className="col-span-12 md:col-span-6 lg:col-span-4">
-                                            <div className="flex flex-col gap-y-1">
-                                              <label
-                                                data-required
-                                                className="font-semibold">
-                                                Hora de egreso limpieza
-                                              </label>
-                                              <Controller
-                                                name={
-                                                  `responsables_limpieza.${index}.hora_egreso_limpieza` as const
-                                                }
-                                                control={control}
-                                                render={({ field }) => (
                                                   <Input
                                                     {...field}
                                                     value={field.value ?? ""}
@@ -702,53 +641,123 @@ export default function CargaTres({
                                                           value
                                                         );
                                                       setValue(
-                                                        `responsables_limpieza.${index}.hora_egreso_limpieza`,
-                                                        normalizado
+                                                        `responsables_limpieza.${index}.hora_ingreso_limpieza`,
+                                                        normalizado as string
                                                       );
                                                     }}
                                                     error={
                                                       !!errors
                                                         .responsables_limpieza?.[
                                                         index
-                                                      ]?.hora_egreso_limpieza
+                                                      ]?.hora_ingreso_limpieza
                                                     }
                                                     aria-invalid={
                                                       errors
                                                         .responsables_limpieza?.[
                                                         index
-                                                      ]?.hora_egreso_limpieza
+                                                      ]?.hora_ingreso_limpieza
                                                         ? "true"
                                                         : "false"
                                                     }
                                                   />
-                                                )}
-                                              />
-                                              {errors.responsables_limpieza?.[
-                                                index
-                                              ]?.hora_egreso_limpieza && (
-                                                <div className="flex items-center gap-x-2 ps-0.5">
-                                                  <Image
-                                                    src={ErrorIcon}
-                                                    alt="Icono de error"
-                                                    className="size-4"
-                                                  />
-                                                  <p className="text-red-500 text-sm">
-                                                    {
-                                                      errors
-                                                        .responsables_limpieza[
-                                                        index
-                                                      ]?.hora_egreso_limpieza
-                                                        ?.message
-                                                    }
-                                                  </p>
-                                                </div>
-                                              )}
-                                            </div>
+                                                );
+                                              }}
+                                            />
+                                            {errors.responsables_limpieza?.[
+                                              index
+                                            ]?.hora_ingreso_limpieza && (
+                                              <div className="flex items-center gap-x-2 ps-0.5">
+                                                <Image
+                                                  src={ErrorIcon}
+                                                  alt="Icono de error"
+                                                  className="size-4"
+                                                />
+                                                <p className="text-red-500 text-sm">
+                                                  {
+                                                    errors
+                                                      .responsables_limpieza[
+                                                      index
+                                                    ]?.hora_ingreso_limpieza
+                                                      ?.message
+                                                  }
+                                                </p>
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
-                                        <hr />
-                                      </>
+
+                                        {/* 3) Hora de egreso */}
+
+                                        <div className="col-span-12 md:col-span-6 lg:col-span-4">
+                                          <div className="flex flex-col gap-y-1">
+                                            <label
+                                              data-required
+                                              className="font-semibold">
+                                              Hora de egreso limpieza
+                                            </label>
+                                            <Controller
+                                              name={
+                                                `responsables_limpieza.${index}.hora_egreso_limpieza` as const
+                                              }
+                                              control={control}
+                                              render={({ field }) => (
+                                                <Input
+                                                  {...field}
+                                                  value={field.value ?? ""}
+                                                  onBlur={(e) => {
+                                                    const value =
+                                                      e.target.value;
+                                                    const normalizado =
+                                                      normalizarHoraInput(
+                                                        value
+                                                      );
+                                                    setValue(
+                                                      `responsables_limpieza.${index}.hora_egreso_limpieza`,
+                                                      normalizado
+                                                    );
+                                                  }}
+                                                  error={
+                                                    !!errors
+                                                      .responsables_limpieza?.[
+                                                      index
+                                                    ]?.hora_egreso_limpieza
+                                                  }
+                                                  aria-invalid={
+                                                    errors
+                                                      .responsables_limpieza?.[
+                                                      index
+                                                    ]?.hora_egreso_limpieza
+                                                      ? "true"
+                                                      : "false"
+                                                  }
+                                                />
+                                              )}
+                                            />
+                                            {errors.responsables_limpieza?.[
+                                              index
+                                            ]?.hora_egreso_limpieza && (
+                                              <div className="flex items-center gap-x-2 ps-0.5">
+                                                <Image
+                                                  src={ErrorIcon}
+                                                  alt="Icono de error"
+                                                  className="size-4"
+                                                />
+                                                <p className="text-red-500 text-sm">
+                                                  {
+                                                    errors
+                                                      .responsables_limpieza[
+                                                      index
+                                                    ]?.hora_egreso_limpieza
+                                                      ?.message
+                                                  }
+                                                </p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
                                     ))}
+                                    <hr />
                                     <div className="grid grid-cols-12 gap-y-6 gap-x-2 md:gap-6">
                                       <div className="col-span-12 md:col-span-6 lg:col-span-4 2xl:col-span-3">
                                         <div className="radio-container">
