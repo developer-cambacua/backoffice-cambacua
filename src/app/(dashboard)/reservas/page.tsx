@@ -29,6 +29,8 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { reservasSelect } from "@/utils/supabase/querys";
 import { useCancelarReserva } from "@/hooks/useCancelarReserva";
+import clsx from "clsx";
+import { formatearResponsablesParaCSV, headers } from "@/utils/functions/csvHelpers";
 
 export default function Page() {
   const queryClient = useQueryClient();
@@ -240,11 +242,9 @@ export default function Page() {
     return (
       <tr
         key={row.id}
-        className={
-          row.estado_reserva === "cancelado"
-            ? "bg-slate-200/50 text-gray-400"
-            : ""
-        }>
+        className={clsx(
+          row.estado_reserva === "cancelado" && "bg-slate-200/50 text-gray-400"
+        )}>
         <td className={renderRowClass}>
           <p>{row.numero_reserva ? row.numero_reserva : "-"}</p>
         </td>
@@ -366,64 +366,8 @@ export default function Page() {
     );
   };
 
-  interface Header {
-    label: string;
-    key: string;
-  }
-
-  const headers: Header[] = [
-    { label: "Departamento", key: "departamento.nombre" },
-    { label: "Email", key: "huesped.email" },
-    { label: "Nombre completo huésped ", key: "nombre_completo" },
-    { label: "Nombre huésped ", key: "huesped.nombre" },
-    { label: "Apellido huésped ", key: "huesped.apellido" },
-    { label: "Teléfono huésped", key: "huesped.telefono" },
-    { label: "Fecha de carga", key: "created_at" },
-    { label: "Cantidad de Huéspedes", key: "cantidad_huespedes" },
-    { label: "Fecha Ingreso", key: "fecha_ingreso" },
-    { label: "Fecha Egreso", key: "fecha_egreso" },
-    { label: "Número Reserva", key: "numero_reserva" },
-    { label: "Aplicación de Reserva", key: "app_reserva" },
-    { label: "Check In", key: "check_in" },
-    { label: "Check Out", key: "check_out" },
-    { label: "Valor Comisión App", key: "valor_comision_app" },
-    { label: "Estado Reserva", key: "estado_reserva" },
-    { label: "Valor Reserva", key: "valor_reserva" },
-    { label: "IVA", key: "iva" },
-    { label: "Impuesto Municipal", key: "impuesto_municipal" },
-    { label: "Cantidad Huésped Adicional", key: "cantidad_huesped_adicional" },
-    { label: "Valor Huésped Adicional", key: "valor_huesped_adicional" },
-    { label: "Valor Cochera", key: "valor_cochera" },
-    { label: "Fecha de Pago", key: "fecha_de_pago" },
-    { label: "Quién Cobró", key: "quien_cobro" },
-    { label: "Responsable Check In", key: "responsable_check_in" },
-    { label: "Responsable Check Out", key: "responsable_check_out" },
-    { label: "Valor Dólar Oficial", key: "valor_dolar_oficial" },
-    { label: "Valor Dólar Blue", key: "valor_dolar_blue" },
-    { label: "Medio de Pago", key: "medio_de_pago" },
-    { label: "Moneda del Pago", key: "moneda_del_pago" },
-    // { label: 'Diferencia Montos', key: 'diferencia_montos' },
-    { label: "Extra Check", key: "extra_check" },
-    { label: "Media Estadia", key: "media_estadia" },
-    {
-      label: "¿Hubo Check In Especial?",
-      key: "check_in_especial",
-    },
-    { label: "Valor Viático", key: "valor_viatico" },
-    {
-      label: "¿Hubo Check Out Especial?",
-      key: "check_out_especial",
-    },
-    { label: "Destino Viático", key: "destino_viatico" },
-    { label: "Tiempo Limpieza", key: "tiempo_limpieza" },
-    { label: "Hora Ingreso Limpieza", key: "hora_ingreso_limpieza" },
-    { label: "Hora Egreso Limpieza", key: "hora_egreso_limpieza" },
-    { label: "Resp. limpieza nombre", key: `responsable_limpieza.nombre` },
-    { label: "Resp. limpieza apellido", key: `responsable_limpieza.apellido` },
-    { label: "Total a cobrar", key: `total_a_cobrar` },
-  ];
-
-  const flattenedData = transformData(filteredData, headers);
+  const preformateado = formatearResponsablesParaCSV(filteredData);
+  const flattenedData = transformData(preformateado, headers);
 
   if (loadingReservas || loadingDepartamentos) {
     return <Spinner />;

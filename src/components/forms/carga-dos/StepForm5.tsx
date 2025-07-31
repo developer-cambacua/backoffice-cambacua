@@ -37,7 +37,8 @@ export const StepForm5 = ({
         <div className="max-w-[512px] mx-auto mt-4">
           <div className={`border-2 border-gray-100 bg-white rounded-md`}>
             <div className="bg-slate-100 py-4 px-8">
-              <h2 className="font-semibold">Resumen de la operación</h2>
+              <h2 className="text-lg font-semibold">Resumen de la operación</h2>
+              <p className="text-sm">Reserva N°: {reserva.numero_reserva}</p>
             </div>
             <div className="px-8 py-6">
               <div className="flex flex-col justify-between h-full">

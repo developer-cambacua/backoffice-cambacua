@@ -107,6 +107,8 @@ export default function CargaDos({
     queryKey: ["tipo-de-cambio"],
     queryFn: fetchDolar,
     retry: 1,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
@@ -481,7 +483,8 @@ export default function CargaDos({
           responsable_check_in: data.responsable_check_in,
           responsable_check_out: data.responsable_check_out,
           check_in_especial: data.check_in_especial === "no" ? false : true,
-          observaciones_pagos: data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
+          observaciones_pagos:
+            data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
           valor_dolar_oficial: stringToFloat(data.valor_dolar_oficial),
           valor_dolar_blue: stringToFloat(data.valor_dolar_blue),
           medio_de_pago: data.medio_de_pago,
@@ -589,21 +592,19 @@ export default function CargaDos({
 
   return (
     <>
-      <h1
-        className={clsx(
-          "font-semibold text-2xl sm:text-3xl",
-          currentStep === 4 && "mb-4"
-        )}>
-        Reserva N°: {reserva.numero_reserva}
-      </h1>
-      {currentStep !== 4 && (
+      {currentStep < 4 && (
+        <h1 className="font-semibold text-2xl sm:text-3xl mb-4">
+          Reserva N°: {reserva.numero_reserva}
+        </h1>
+      )}
+      {currentStep < 4 && (
         <p className="2xl:text-lg mt-2 mb-4">
           Completá los datos requeridos para continuar con la reserva.
         </p>
       )}
       <div className="grid grid-cols-12 gap-6">
         <>
-          {currentStep !== 4 && (
+          {currentStep < 4 && (
             <div className="col-span-12">
               <StepperAlt steps={steps} currentStep={currentStep + 1} />
             </div>
@@ -820,7 +821,7 @@ export default function CargaDos({
                       )}
                     </div>
                     <div className="col-span-12">
-                      <div className="gap-x-6 flex items-center justify-end">
+                      <div className={clsx("gap-x-6 flex items-center justify-end", currentStep === 4 && "max-w-[512px] mx-auto")}>
                         {currentStep + 1 === 1 && (
                           <Button
                             color="tertiary"

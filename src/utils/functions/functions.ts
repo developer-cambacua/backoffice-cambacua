@@ -345,7 +345,11 @@ export const transformData = <T>(data: T[], headers: IHeader[]) =>
       const value = key
         .split(".")
         .reduce((acc: any, part) => acc?.[part], item);
-      flattenedItem[key] = value ?? "-"; // Asigna '-' si el valor es null o undefined
+      if (typeof value === "boolean") {
+        flattenedItem[key] = value ? "sí" : "no";
+      } else {
+        flattenedItem[key] = value ?? "-";
+      }
     });
     return flattenedItem;
   });
