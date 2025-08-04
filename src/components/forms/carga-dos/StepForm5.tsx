@@ -1,10 +1,6 @@
 import { useEffect } from "react";
 import {
-  calculateDaysBetween,
-  formatCurrencyToArs,
-  formatCurrencyToEur,
-  formatCurrencyToUsd,
-} from "@/utils/functions/functions";
+  calculateDaysBetween, formatterMap } from "@/utils/functions/functions";
 import { currency, payments } from "@/utils/objects/paymentMethods";
 
 interface IStepForm5 {
@@ -31,6 +27,11 @@ export const StepForm5 = ({
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, []);
+
+  const formattedTotal = formatterMap[monedaDelPago]
+    ? formatterMap[monedaDelPago](totalReserva)
+    : "Moneda no soportada";
+
   return (
     <>
       <div className="col-span-12">
@@ -154,22 +155,7 @@ export const StepForm5 = ({
                 <hr className="my-6 border-primary-500/75" />
                 <div className="flex items-center justify-between">
                   <p>Total a cobrar: </p>
-                  <p>
-                    {(() => {
-                      const formatters: Record<
-                        string,
-                        (value: number) => string
-                      > = {
-                        ARS: formatCurrencyToArs,
-                        USD: formatCurrencyToUsd,
-                        EUR: formatCurrencyToEur,
-                      };
-                      const formatter = formatters[monedaDelPago];
-                      return formatter
-                        ? formatter(totalReserva)
-                        : "Moneda no soportada";
-                    })()}
-                  </p>
+                  <p>{formattedTotal}</p>
                 </div>
               </div>
             </div>

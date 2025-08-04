@@ -59,7 +59,7 @@ export const StepForm3 = ({ control, errors, selectedApp }: Props) => {
                 {...field}
                 title={selectedApp !== "booking" ? "No disponible" : ""}
                 placeholder="Ingresá el valor"
-                disabled={selectedApp === "booking" ? false : true}
+                disabled={selectedApp !== "booking"}
                 error={!!errors.valor_comision_app}
                 aria-invalid={errors.valor_comision_app ? "true" : "false"}
               />

@@ -157,7 +157,7 @@ export default function CargaDos({
   const monedaDelPago = watch("moneda_del_pago") as Currency;
   const poseeFactura = watch("posee_factura");
   const selectedCollector = watch("quien_cobro");
-  const app = appReserva === "booking" ? "booking" : undefined;
+  const app = appReserva ? appReserva : undefined;
 
   const calcularNochesReservas = calculateDaysBetween(
     reserva?.fecha_ingreso,
@@ -455,7 +455,7 @@ export default function CargaDos({
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
         throw fileError;
       }
@@ -506,7 +506,7 @@ export default function CargaDos({
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
         console.error(error);
       } else {
@@ -526,7 +526,7 @@ export default function CargaDos({
               </div>
             </Toast>
           ),
-          { duration: 7500 }
+          { duration: 5000 }
         );
         queryClient.invalidateQueries({ queryKey: ["reservas"] });
         router.push("/reservas");

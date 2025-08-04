@@ -14,7 +14,7 @@ export type PaymentMethod =
   | "WISE";
 export type Currency = "ARS" | "USD" | "EUR";
 export type Collector = "TAMARA" | "MILAGROS" | "PROPIETARIO";
-export type TWeb = "booking" | "web";
+export type TWeb = "airbnb" | "booking" | "web";
 
 // Definimos una interfaz para los valores de cambio
 interface ExchangeRates {
@@ -150,8 +150,9 @@ export function calculateReservation(
   amount: number,
   rates: ExchangeRates,
   collectorId?: number,
-  web?: "booking" | "web"
+  web?: "booking" | "web" | "airbnb"
 ): number {
+  if (web === "airbnb") return amount;
   const config = calculationConfig.find((conf) => {
     const collector = resolveCollector(collectorId);
     return (

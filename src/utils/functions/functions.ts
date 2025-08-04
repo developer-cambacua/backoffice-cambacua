@@ -140,6 +140,12 @@ export const formatCurrencyToEur = (value: number): string => {
   return formatter.format(value);
 };
 
+export const formatterMap: Record<string, (value: number) => string> = {
+  ARS: formatCurrencyToArs,
+  USD: formatCurrencyToUsd,
+  EUR: formatCurrencyToEur,
+};
+
 export const calcularTotalReserva = ({
   reservaBase,
   extraCheck,
