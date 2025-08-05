@@ -18,12 +18,14 @@ import { Input } from "@/components/ui/input";
 import { NewSelect } from "@/components/select/NewSelect";
 import { DatePickerSingle } from "@/components/datePicker/DatePickerSingle";
 import TextArea from "@/components/inputs/Textarea";
+import clsx from "clsx";
 
 interface IStepForm4 {
   empleados: any[];
   filteredCurrencies: any;
   exchangeRate: IDolar[] | null;
   loadingDolar: boolean;
+  poseeFactura: string;
   control: Control<any>;
   errors: FieldErrors<any>;
   setValue: UseFormSetValue<any>;
@@ -38,6 +40,7 @@ export const StepForm4 = ({
   setValue,
   exchangeRate,
   loadingDolar,
+  poseeFactura,
   setDate,
 }: IStepForm4) => {
   return (
@@ -404,7 +407,9 @@ export const StepForm4 = ({
       </div>
       <div className="col-span-12 md:col-span-6 lg:col-span-4 2xl:col-span-3">
         <div className="input-container-alt">
-          <label>Número de factura</label>
+          <label className={clsx(poseeFactura === "no" && "text-gray-400")}>
+            Número de factura
+          </label>
           <Controller
             name="numero_factura"
             control={control}
@@ -416,6 +421,7 @@ export const StepForm4 = ({
                   value={field.value}
                   error={!!errors.numero_factura}
                   aria-invalid={errors.numero_factura ? "true" : "false"}
+                  disabled={poseeFactura === "no"}
                 />
               );
             }}

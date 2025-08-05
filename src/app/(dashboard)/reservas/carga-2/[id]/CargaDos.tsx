@@ -180,6 +180,18 @@ export default function CargaDos({
       }));
   }, [medioDePago]);
 
+  useEffect(() => {
+    if (!medioDePago) return;
+
+    if (!filteredCurrencies.some((c) => c.value === monedaDelPago)) {
+      if (filteredCurrencies.length > 0) {
+        setValue("moneda_del_pago", filteredCurrencies[0].value);
+      } else {
+        setValue("moneda_del_pago", "");
+      }
+    }
+  }, [medioDePago, filteredCurrencies, monedaDelPago, setValue]);
+
   const amount = calcularTotalReserva({
     reservaBase: reserva?.valor_reserva.toString() || "0",
     extraCheck: formData?.extra_check || "0",
@@ -796,6 +808,7 @@ export default function CargaDos({
                                     filteredCurrencies={filteredCurrencies}
                                     exchangeRate={exchangeRate}
                                     loadingDolar={loadingDolar}
+                                    poseeFactura={poseeFactura}
                                     control={control}
                                     setValue={setValue}
                                     errors={errors}
@@ -821,7 +834,11 @@ export default function CargaDos({
                       )}
                     </div>
                     <div className="col-span-12">
-                      <div className={clsx("gap-x-6 flex items-center justify-end", currentStep === 4 && "max-w-[512px] mx-auto")}>
+                      <div
+                        className={clsx(
+                          "gap-x-6 flex items-center justify-end",
+                          currentStep === 4 && "max-w-[512px] mx-auto"
+                        )}>
                         {currentStep + 1 === 1 && (
                           <Button
                             color="tertiary"

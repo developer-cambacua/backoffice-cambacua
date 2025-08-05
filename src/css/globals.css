@@ -23,12 +23,6 @@ body {
   box-shadow: 2px 2px 6px 0px #00000040;
 }
 
-.ant-select-clear,
-.ant-select-arrow,
-.ant-select-show-search {
-  font-size: 14px !important;
-}
-
 @layer base {
   :root {
     --chart-1: 12 76% 61%;
@@ -96,12 +90,6 @@ body {
     }
   }
 
-  /* .timePickerCambacua{
-    background-color: #fff !important;
-    height: 48px !important;
-    @apply ring-2 ring-gray-200 border-none hover:!border-none hover:!border-0
-  } */
-
   /* -------------------- Inputs -------------------- */
 
   .field_cambacua {
@@ -165,9 +153,9 @@ body {
     width: auto;
   }
 
-  .input-container {
+  /* .input-container {
     min-height: 100px;
-  }
+  } */
 
   .input-container-alt {
     @apply flex flex-col gap-1;

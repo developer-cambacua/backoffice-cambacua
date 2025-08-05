@@ -7,6 +7,7 @@ import {
 import Image from "next/image";
 import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
 import { Input } from "@/components/ui/input";
+import clsx from "clsx";
 
 type Props = {
   register: UseFormRegister<any>;
@@ -48,7 +49,7 @@ export const StepForm3 = ({ control, errors, selectedApp }: Props) => {
         <div className="input-container-alt">
           <label
             htmlFor="valor_comision_app"
-            className={selectedApp !== "booking" ? "text-gray-400" : ""}>
+            className={clsx(selectedApp !== "booking" && "text-gray-400")}>
             Comisión app (US$)
           </label>
           <Controller

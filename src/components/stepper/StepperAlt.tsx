@@ -17,7 +17,7 @@ type StepperProps = {
 export default function StepperAlt({ steps, currentStep }: StepperProps) {
   const DesktopStepper = () => {
     return (
-      <div className="hidden lg:flex items-center justify-between gap-0.5">
+      <div className="hidden lg:flex items-center justify-center gap-0.5">
         {steps.map((step, index) => {
           const isCompleted = currentStep > step.number;
           const isActive = step.number === currentStep;
