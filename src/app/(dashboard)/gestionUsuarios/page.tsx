@@ -2,10 +2,9 @@ import { getUsers } from "@/lib/db/users";
 import UsuariosPage from "./UsuariosPage";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function Page() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session?.user?.email) {
     redirect("/");

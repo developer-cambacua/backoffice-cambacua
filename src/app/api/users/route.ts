@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { userSchema } from "@/utils/objects/validationSchema";
 import { supabase } from "@/utils/supabase/client";
 import { getToken } from "next-auth/jwt";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/spinner/Spinner";
@@ -17,6 +17,7 @@ import {
 } from "@/components/dataTables/reportes/columns";
 import { IEmpleadoOption, IReservasDefault } from "@/types/supabaseTypes";
 import { ServerResult } from "@/types/serverResult";
+import { ColumnDef } from "@tanstack/react-table";
 
 type ResponsableLimpieza = {
   reserva_id: number;
@@ -259,7 +260,7 @@ export default function RepLimpieza({
                 content: (
                   <DataTable
                     data={registrosEmpleados}
-                    columns={getForEachLimpiezaColumns}
+                    columns={getForEachLimpiezaColumns as unknown as ColumnDef<unknown, unknown>[]}
                     getRowClassName={() =>
                       "odd:bg-slate-50 even:bg-white hover:bg-secondary-50"
                     }

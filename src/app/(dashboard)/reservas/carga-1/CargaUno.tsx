@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "@/utils/supabase/client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -20,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 /* ----------------------------------- */
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import StepperAlt from "@/components/stepper/StepperAlt";
 import { StepForm1 } from "@/components/forms/carga-uno/StepForm1";
@@ -29,10 +28,8 @@ import { StepForm3 } from "@/components/forms/carga-uno/StepForm3";
 import { StepForm4 } from "@/components/forms/carga-uno/StepForm4";
 import { IDepartamento } from "@/types/supabaseTypes";
 import { useAddReserva } from "@/hooks/useReservas";
-import { getDeptos } from "@/lib/db/deptos";
 
 export default function CargaUno({ data }: { data: IDepartamento[] }) {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const [selectedDepto, setSelectedDepto] = useState<any | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -115,7 +112,15 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
 
   const { data: departamentos, isLoading: loadingDepartamentos } = useQuery({
     queryKey: ["departamentos"],
-    queryFn: getDeptos,
+    queryFn: async () => {
+      const res = await fetch(`/api/departamentos`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      const json = await res.json();
+      return Array.isArray(json) ? json : json.data || [];
+    },
     initialData: data,
   });
 

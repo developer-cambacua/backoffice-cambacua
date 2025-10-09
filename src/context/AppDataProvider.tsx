@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { UserInitializer } from "@/providers/UserInitializer";
 import ConfigLoader from "@/providers/ConfigLoader";
 import { createServerSupabase } from "@/utils/supabase/server";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function AppDataWrapper({
   children,
@@ -10,7 +9,7 @@ export async function AppDataWrapper({
   children: React.ReactNode;
 }) {
   const supabase = await createServerSupabase();
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   let initialUser = null;
   let initialConfig = null;
 

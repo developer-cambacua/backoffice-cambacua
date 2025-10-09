@@ -9,7 +9,7 @@ import { getChangedFields } from "@/utils/functions/functions";
 import { Button } from "../buttons/Button";
 import {
   defaultValueUsers,
-  zodUserSchema,
+  userSchema,
 } from "@/utils/objects/validationSchema";
 import { toast } from "react-toastify";
 import { roleOptions } from "@/utils/objects/roles";
@@ -33,7 +33,7 @@ export const Form = ({
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [disabled, setDisabled] = useState<boolean>(false);
   const user = useUserStore((state) => state.user);
-  const [currentSchema, setCurrentSchema] = useState(zodUserSchema);
+  const [currentSchema, setCurrentSchema] = useState(userSchema);
 
   const {
     handleSubmit,
@@ -56,7 +56,7 @@ export const Form = ({
   }, [roleValue]);
 
   useEffect(() => {
-    let newSchema: any = zodUserSchema;
+    let newSchema: any = userSchema;
 
     if (roleValue === "limpieza") {
       newSchema = newSchema.extend({

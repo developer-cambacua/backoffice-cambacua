@@ -207,8 +207,8 @@ export const getDetailsLimpiezaColumns: ColumnDef<any>[] = [
     cell: ({ row }) => <span>{`${row.original.duracion}hs` || "-"}</span>,
   },
   {
-    accessorKey: "fichas",
     header: "Fichas",
+    accessorFn: row => row.original.fichas,
     cell: ({ row }) => <span>{row.original.fichas || "-"}</span>,
   },
   {

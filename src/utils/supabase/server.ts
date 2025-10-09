@@ -1,11 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function createServerSupabase() {
   const cookieStore = cookies();
-  const session = (await getServerSession(authOptions)) as any;
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,11 +22,6 @@ export async function createServerSupabase() {
             // Esto se puede ignorar si tienes middleware refrescando sesiones
           }
         },
-      },
-      global: {
-        headers: session?.supabaseAccessToken
-          ? { Authorization: `Bearer ${session.supabaseAccessToken}` }
-          : {},
       },
     }
   );

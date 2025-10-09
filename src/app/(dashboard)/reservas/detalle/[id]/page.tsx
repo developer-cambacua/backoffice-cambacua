@@ -1,6 +1,6 @@
 import VisualizarReserva from "./VisualizarReserva";
 import { createServerSupabase } from "@/utils/supabase/server";
-import { getResponsablesLimpieza } from "@/lib/db/empleados";
+import { getResponsablesLimpiezaPorReserva } from "@/lib/db/empleados";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const supabase = await createServerSupabase();
@@ -20,7 +20,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   if (error) throw error;
 
-  const responsablesData = await getResponsablesLimpieza(supabase, reservaId);
+  const responsablesData = await getResponsablesLimpiezaPorReserva(
+    supabase,
+    reservaId
+  );
 
   let fileUrl: string | null = null;
 
