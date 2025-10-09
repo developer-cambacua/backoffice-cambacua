@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas2,
-  zodRSchema2,
+  updateReservaSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,15 +31,18 @@ import {
 } from "@/utils/functions/paymentFunction";
 import { SummaryPDF } from "@/components/documents/Recibo";
 
-import { checkAndCreateHuesped } from "@/utils/functions/supabaseFunctions";
-import { QueryObserver, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import StepperAlt from "@/components/stepper/StepperAlt";
 import { Card } from "@/components/cards/Card";
 
 import axios from "axios";
 import { StepForm1 } from "@/components/forms/carga-dos/StepForm1";
-import { SelectedGuest } from "@/types/supabaseTypes";
-import { useDebounce } from "@/hooks/useDebounce";
+import {
+  IEmpleados,
+  IReservasDefault,
+  SelectedGuest,
+  StatusType,
+} from "@/types/supabaseTypes";
 import { StepForm2 } from "@/components/forms/carga-dos/StepForm2";
 import { StepForm3 } from "@/components/forms/carga-dos/StepForm3";
 import { StepForm4 } from "@/components/forms/carga-dos/StepForm4";
@@ -47,19 +50,27 @@ import clsx from "clsx";
 import { StepForm5 } from "@/components/forms/carga-dos/StepForm5";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
-import { fetchEmpleados, fetchReserva } from "@/utils/functions/fetchs";
+import { fetchEmpleados } from "@/backup/fetchs";
 import { Loader2 } from "lucide-react";
+import { getReservaById } from "@/lib/db/reservas";
+import { useUpdateReserva } from "@/hooks/useReservas";
+import { useUploadDocument } from "@/hooks/useDocumentacion";
+import { useAddHuesped } from "@/hooks/useHuesped";
+import { useGuestsSearch } from "@/hooks/useGuestSearch";
 
 export default function CargaDos({
   reservaFromServer,
   empleadosFromServer,
 }: {
-  reservaFromServer: any;
-  empleadosFromServer: any[];
+  reservaFromServer: IReservasDefault;
+  empleadosFromServer: IEmpleados[];
 }) {
+  const id = reservaFromServer.id;
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [disabled, setDisabled] = useState<boolean>(false);
+  const addHuesped = useAddHuesped();
+  const updateReserva = useUpdateReserva(id);
+  const uploadDocument = useUploadDocument();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [currentSchema, setCurrentSchema] = useState(z.object({}));
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -68,21 +79,17 @@ export default function CargaDos({
     null
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useDebounce(
-    searchQuery,
-    300
-  );
   const [formKey, setFormKey] = useState<boolean>(false);
 
-  type FormData = z.infer<typeof zodRSchema2>;
+  type FormData = z.infer<typeof updateReservaSchema>;
 
   type FieldName = keyof FormData;
 
   /* --------------------------------------------------------------------------- */
 
   const { data: reserva } = useQuery({
-    queryKey: ["reserva", reservaFromServer.id],
-    queryFn: () => fetchReserva(reservaFromServer.id),
+    queryKey: ["reserva", id],
+    queryFn: () => getReservaById(supabase, id),
     initialData: reservaFromServer,
     gcTime: 1000 * 60 * 5,
   });
@@ -93,6 +100,14 @@ export default function CargaDos({
     placeholderData: undefined,
     initialData: empleadosFromServer,
   });
+
+  const {
+    data: guests = [],
+    error: isErrorGuests,
+    isFetching,
+    debouncedQuery,
+    setDebouncedQuery,
+  } = useGuestsSearch(searchQuery);
 
   const fetchDolar = async () => {
     const { data } = await axios.get("https://dolarapi.com/v1/dolares");
@@ -231,7 +246,7 @@ export default function CargaDos({
   );
 
   useEffect(() => {
-    let newSchema: any = zodRSchema2;
+    let newSchema: any = updateReservaSchema;
     if (adicionalHuesped === "si") {
       newSchema = newSchema.extend({
         cantidad_huesped_adicional: z
@@ -388,7 +403,7 @@ export default function CargaDos({
     if (!output) return;
     if (currentStep < steps.length - 1) {
       const currentData = getValues();
-      setFormData((prevData) => mergeFormData(prevData, currentData));
+      setFormData((prevData: any) => mergeFormData(prevData, currentData));
       setCurrentStep((step) => step + 1);
     } else {
       await handleSubmit(processForm)();
@@ -396,7 +411,7 @@ export default function CargaDos({
   };
 
   const processForm: SubmitHandler<FormData> = async (data) => {
-    setFormData((prevData) => ({
+    setFormData((prevData: any) => ({
       ...prevData,
       ...data,
     }));
@@ -416,7 +431,9 @@ export default function CargaDos({
       Object.fromEntries(
         currentFields.map((field) => [
           field,
-          zodRSchema2.shape[field as keyof typeof zodRSchema2.shape],
+          updateReservaSchema.shape[
+            field as keyof typeof updateReservaSchema.shape
+          ],
         ])
       )
     );
@@ -441,111 +458,84 @@ export default function CargaDos({
   };
 
   const onSubmit = async (data: any) => {
-    const newData: any = sanitizeData(data);
-    const huespedId = await checkAndCreateHuesped(
-      newData.numero_identificacion,
-      newData
-    );
-    const offsetHoras = -3;
     try {
-      setDisabled(true);
+      const offsetHoras = -3;
 
-      const file = data.documentacion_huespedes;
-      const fileName = `documentacion-${Date.now()}-${renameFile(file.name)}`;
+      const newData: any = sanitizeData(data);
+      const huesped = await addHuesped.mutateAsync(newData);
+      const huespedId = huesped.id;
 
-      const { error: fileError } = await supabase.storage
-        .from("documentacion")
-        .upload(fileName, file);
+      const uploadFile = await uploadDocument.mutateAsync(
+        data.documentacion_huespedes
+      );
+      const fileName = renameFile(uploadFile);
 
-      if (fileError) {
-        setDisabled(false);
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="error">
-              <div>
-                <p>{`Ha ocurrido un error subiendo el archivo:, ${fileError.message}`}</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 5000 }
-        );
-        throw fileError;
-      }
-      let response;
-      response = await supabase
-        .from("reservas")
-        .update({
-          huesped_id: huespedId,
-          check_in: data.check_in,
-          check_out: data.check_out,
-          extra_check:
-            data.extra_check !== "" ? stringToFloat(data.extra_check) : 0,
-          media_estadia:
-            data.media_estadia !== "" ? stringToFloat(data.media_estadia) : 0,
-          documentacion_huesped: fileName,
-          iva: stringToFloat(data.iva),
-          impuesto_municipal: stringToFloat(data.impuesto_municipal),
-          cantidad_huesped_adicional: stringToFloat(
-            data.cantidad_huesped_adicional
-          ),
-          valor_huesped_adicional: stringToFloat(data.valor_huesped_adicional),
-          valor_cochera: stringToFloat(data.valor_cochera),
-          fecha_de_pago: ajustarFechaUTC(data.fecha_de_pago, offsetHoras),
-          quien_cobro: data.quien_cobro,
-          responsable_check_in: data.responsable_check_in,
-          responsable_check_out: data.responsable_check_out,
-          check_in_especial: data.check_in_especial === "no" ? false : true,
-          observaciones_pagos:
-            data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
-          valor_dolar_oficial: stringToFloat(data.valor_dolar_oficial),
-          valor_dolar_blue: stringToFloat(data.valor_dolar_blue),
-          medio_de_pago: data.medio_de_pago,
-          moneda_del_pago: data.moneda_del_pago,
-          posee_factura: data.posee_factura === "si" ? true : false,
-          numero_factura: data.numero_factura,
-          total_a_cobrar: totalReserva,
-          estado_reserva: "en_proceso",
-        })
-        .eq("id", reserva?.id);
-      const { error } = response;
-      if (error) {
-        setDisabled(false);
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="error">
-              <div>
-                <p>{`Ha ocurrido un error, ${error.message}`}</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 5000 }
-        );
-        console.error(error);
-      } else {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="success">
-              <div>
-                <p>Se ha actualizado con éxito la reserva.</p>
+      const payload = {
+        huesped_id: huespedId,
+        check_in: data.check_in,
+        check_out: data.check_out,
+        extra_check:
+          data.extra_check !== "" ? stringToFloat(data.extra_check) : 0,
+        media_estadia:
+          data.media_estadia !== "" ? stringToFloat(data.media_estadia) : 0,
+        documentacion_huesped: fileName,
+        iva: stringToFloat(data.iva),
+        impuesto_municipal: stringToFloat(data.impuesto_municipal),
+        cantidad_huesped_adicional: stringToFloat(
+          data.cantidad_huesped_adicional
+        ),
+        valor_huesped_adicional: stringToFloat(data.valor_huesped_adicional),
+        valor_cochera: stringToFloat(data.valor_cochera),
+        fecha_de_pago: ajustarFechaUTC(data.fecha_de_pago, offsetHoras),
+        quien_cobro: data.quien_cobro,
+        responsable_check_in: data.responsable_check_in,
+        responsable_check_out: data.responsable_check_out,
+        check_in_especial: data.check_in_especial === "no" ? false : true,
+        observaciones_pagos:
+          data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
+        valor_dolar_oficial: stringToFloat(data.valor_dolar_oficial),
+        valor_dolar_blue: stringToFloat(data.valor_dolar_blue),
+        medio_de_pago: data.medio_de_pago,
+        moneda_del_pago: data.moneda_del_pago,
+        posee_factura: data.posee_factura === "si" ? true : false,
+        numero_factura: data.numero_factura,
+        total_a_cobrar: totalReserva,
+        estado_reserva: "en_proceso" as StatusType,
+      };
+
+      updateReserva.mutate(payload, {
+        onSuccess: () => {
+          toast.custom(
+            (id) => (
+              <Toast id={id} variant="success">
                 <div>
-                  <p>
-                    Para descargar el recibo,{" "}
-                    <span className="block">
-                      hace click <SummaryPDF {...valuesPDF} />
-                    </span>
-                  </p>
+                  <p>Se ha actualizado con éxito la reserva.</p>
+                  <div>
+                    <p>
+                      Para descargar el recibo,{" "}
+                      <span className="block">
+                        hace click <SummaryPDF {...valuesPDF} />
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Toast>
-          ),
-          { duration: 5000 }
-        );
-        queryClient.invalidateQueries({ queryKey: ["reservas"] });
-        router.push("/reservas");
-      }
-    } catch (error) {
-      setDisabled(false);
-      console.error(error);
+              </Toast>
+            ),
+            { duration: 5000 }
+          );
+        },
+      });
+    } catch (error: any) {
+      toast.custom(
+        (id) => (
+          <Toast id={id} variant="error">
+            <div>
+              <p>{error.message}</p>
+            </div>
+          </Toast>
+        ),
+        { duration: 5000 }
+      );
     }
   };
 
@@ -575,32 +565,6 @@ export default function CargaDos({
       });
     }
   }, [reserva, reset]);
-
-  const {
-    data: guests = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["guests", debouncedSearchQuery],
-    queryFn: async () => {
-      if (!debouncedSearchQuery) return [];
-
-      const { data, error } = await supabase
-        .from("huespedes")
-        .select(
-          "id, tipo_identificacion, numero_identificacion, apellido, nombre, email, telefono, nacionalidad"
-        )
-        .or(
-          `numero_identificacion.ilike.%${debouncedSearchQuery}%,nombre.ilike.%${debouncedSearchQuery}%,apellido.ilike.%${debouncedSearchQuery}%,email.ilike.%${debouncedSearchQuery}%`
-        )
-        .limit(3);
-
-      if (error) throw new Error(error.message);
-
-      return data;
-    },
-    enabled: debouncedSearchQuery.length > 0,
-  });
 
   return (
     <>
@@ -766,13 +730,13 @@ export default function CargaDos({
                                 {currentStep === 0 && (
                                   <StepForm1
                                     setCurrentStep={setCurrentStep}
-                                    debouncedSearchQuery={debouncedSearchQuery}
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}
                                     setSelectedGuest={setSelectedGuest}
                                     guests={guests}
-                                    isLoading={isLoading}
-                                    isError={isError}
+                                    isFetching={isFetching}
+                                    debouncedSearchQuery={debouncedQuery}
+                                    // isError={isErrorGuests}
                                   />
                                 )}
                                 {currentStep === 1 && (
@@ -782,12 +746,10 @@ export default function CargaDos({
                                     queryClient={queryClient}
                                     selectedGuest={selectedGuest}
                                     setCurrentStep={setCurrentStep}
-                                    setDebouncedSearchQuery={
-                                      setDebouncedSearchQuery
-                                    }
                                     setSearchQuery={setSearchQuery}
                                     setSelectedGuest={setSelectedGuest}
                                     setValue={setValue}
+                                    setDebouncedQuery={setDebouncedQuery}
                                   />
                                 )}
                                 {currentStep === 2 && (
@@ -871,8 +833,10 @@ export default function CargaDos({
                             color="primary"
                             variant="solid"
                             type="submit"
-                            disabled={disabled}>
-                            {disabled ? (
+                            disabled={
+                              updateReserva.isPending || updateReserva.isSuccess
+                            }>
+                            {updateReserva.isPending ? (
                               <span className="flex items-center gap-x-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 Cargando...

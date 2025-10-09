@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { NewSelect } from "@/components/select/NewSelect";
-import { Table } from "@/components/tables/Table";
-import { headersReportesLimpiezaPrimario } from "@/utils/objects/headerTable";
 import Link from "next/link";
 import {
   decimalAHorasMinutos,
@@ -11,13 +9,16 @@ import {
   parseTiempoLimpieza,
   years,
 } from "@/utils/functions/functions";
+import { DataTable } from "@/components/dataTables/DataTable";
+import { getLimpiezaColumns } from "@/components/dataTables/reportes/columns";
+import { IReservasDefault } from "@/types/supabaseTypes";
 
 export const ReporteLimpieza = ({
   reservas,
   empleados,
   responsablesDeLimpieza,
 }: {
-  reservas: any[];
+  reservas: IReservasDefault[];
   empleados: any[];
   responsablesDeLimpieza: any[];
 }) => {
@@ -106,45 +107,16 @@ export const ReporteLimpieza = ({
       };
     });
 
-  const renderRowClass: string =
-    "px-6 py-4 font-normal whitespace-nowrap text-sm";
+  const columns = getLimpiezaColumns(empleados);
 
-  const renderRow = (row: any) => {
-    // Asegurarse que venga un array de responsables
-    const responsables = Array.isArray(row.responsables_limpieza)
-      ? row.responsables_limpieza
-      : [];
-
-    return responsables.map((asignacion: any, index: number) => {
-      const empleado = empleados?.find(
-        (emp) => emp.value === asignacion.empleado.id
-      );
-      const fullName = `${empleado ? empleado.label : "-"}`;
-
-      return (
-        <tr key={`row-limpieza-${row.id}-${asignacion.empleado.id}-${index}`}>
-          <td className={renderRowClass}>
-            <p>{fullName}</p>
-          </td>
-          <td className={renderRowClass}>
-            <p>{row.departamento ? row.departamento.nombre : "-"}</p>
-          </td>
-          <td className={renderRowClass}>
-            <p>{`${asignacion.hora_ingreso ?? "-"}hs`}</p>
-          </td>
-          <td className={renderRowClass}>
-            <p>{`${asignacion.hora_egreso ?? "-"}hs`}</p>
-          </td>
-          <td className={renderRowClass}>
-            <p>{`${asignacion.tiempo_limpieza ?? "-"}hs`}</p>
-          </td>
-          <td className={renderRowClass}>
-            <p>{asignacion.notas ?? "-"}</p>
-          </td>
-        </tr>
-      );
-    });
-  };
+  const dataTableRows =
+    filteredReservas?.flatMap((reserva) => {
+      return reserva.responsables_limpieza.map((responsable: any) => ({
+        reservaId: reserva.id,
+        departamento: reserva.departamento,
+        responsable,
+      }));
+    }) || [];
 
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -184,7 +156,7 @@ export const ReporteLimpieza = ({
               <Link
                 href={`/reportes/limpieza/${month.value}${selectedYear}`}
                 key={`limpieza-mes-${index}`}
-                className="col-span-12 sm:col-span-6 lg:col-span-4 xl:col-span-3 2xl:col-span-2">
+                className="col-span-6 sm:col-span-6 lg:col-span-4 xl:col-span-3 2xl:col-span-2">
                 <div
                   className={`group bg-white cursor-pointer shadow-sm outline ${
                     Number(month.value) === new Date().getMonth() + 1
@@ -213,7 +185,7 @@ export const ReporteLimpieza = ({
                       <p className="text-lg font-bold">
                         {decimalAHorasMinutos(horas)}hs
                       </p>
-                      <p className="text-sm text-slate-400">Horas</p>
+                      <p className="text-xs sm:text-sm text-slate-400">Horas</p>
                     </div>
                   </div>
                 </div>
@@ -224,12 +196,11 @@ export const ReporteLimpieza = ({
       </div>
       <div className="col-span-12">
         <hr />
-        <h2 className="mt-6 text-xl font-semibold">Registro de limpieza</h2>
-        <Table
-          data={filteredReservas ? filteredReservas : []}
-          headerData={headersReportesLimpiezaPrimario}
-          colSpan={headersReportesLimpiezaPrimario.length}
-          renderRow={renderRow}
+        <h2 className="mt-6 text-xl font-semibold mb-2">Registro de limpieza</h2>
+        <DataTable
+          data={dataTableRows}
+          columns={columns}
+          getRowClassName={() => "odd:bg-slate-50 even:bg-white"}
         />
       </div>
     </div>

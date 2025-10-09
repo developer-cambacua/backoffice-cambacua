@@ -1,17 +1,10 @@
-export const dynamic = 'force-dynamic';
-
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerSupabase } from "@/utils/supabase/server";
+import { getDeptos } from "@/lib/db/deptos";
 import CargaUno from "./CargaUno";
 
 export default async function Page() {
-  const supabase = createServerComponentClient({ cookies });
-  const { data: departamentos, error: errorDepartamentos } = await supabase
-    .from("departamentos")
-    .select(`*, usuario:usuarios(*)`)
-    .order("id", { ascending: false });
+  const supabase = await createServerSupabase();
+  const deptosData = await getDeptos(supabase);
 
-  if (errorDepartamentos) throw new Error(errorDepartamentos.message);
-
-  return <CargaUno departamentosFromServer={departamentos ?? []} />;
+  return <CargaUno data={deptosData} />;
 }

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CardMonths } from "@/components/cards/CardMonths";
 import { NewSelect } from "@/components/select/NewSelect";
-import { Table } from "@/components/tables/Table";
-import { headersTableChecks } from "@/utils/objects/headerTable";
 import Link from "next/link";
 import { months, years } from "@/utils/functions/functions";
+import { DataTable } from "@/components/dataTables/DataTable";
+import { getChecksColumns } from "@/components/dataTables/reportes/columns";
+import { IEmpleadoOption } from "@/types/supabaseTypes";
 
 export const ReporteChecks = ({
   reservas,
@@ -20,9 +21,6 @@ export const ReporteChecks = ({
     currentYear.toString()
   );
   const [selectedEmpleado, setSelectedEmpleado] = useState<string>("");
-  const [checkData, setCheckData] = useState<
-    Record<number, { checkIns: number; checkOuts: number }>
-  >({});
 
   const getChecksRecords = useCallback(() => {
     if (!reservas || !empleados) return {};
@@ -60,12 +58,16 @@ export const ReporteChecks = ({
     return records;
   }, [reservas, empleados, selectedYear]);
 
-  useEffect(() => {
-    if (reservas && empleados) {
-      const records = getChecksRecords();
-      setCheckData(records);
-    }
+const checkData = useMemo(() => {
+    if (!reservas || !empleados) return {};
+    return getChecksRecords();
   }, [reservas, empleados, getChecksRecords]);
+
+  const empleadosConChecks = empleados.filter((emp: IEmpleadoOption) => {
+    if (emp.value == null) return false;
+    const stats = checkData[emp.value];
+    return stats && (stats.checkIns > 0 || stats.checkOuts > 0);
+  });
 
   /* -------------------- Filtrar check-ins y check-outs -------------------- */
 
@@ -105,29 +107,6 @@ export const ReporteChecks = ({
     return { checkIns, checkOuts };
   };
 
-  const renderRowClass: string =
-    "px-6 py-4 font-normal whitespace-nowrap text-sm";
-
-  const renderRow = (row: any) => {
-    const { checkIns, checkOuts } = checkData[row.value] || {
-      checkIns: 0,
-      checkOuts: 0,
-    };
-    return (
-      <tr key={`user-${row.value}`}>
-        <td className={renderRowClass}>
-          <p>{row.label}</p>
-        </td>
-        <td className={renderRowClass}>
-          <p>{checkIns}</p>
-        </td>
-        <td className={renderRowClass}>
-          <p>{checkOuts}</p>
-        </td>
-      </tr>
-    );
-  };
-
   return (
     <div className="grid grid-cols-12 gap-6">
       <div className="col-span-12">
@@ -164,7 +143,7 @@ export const ReporteChecks = ({
               <Link
                 href={`reportes/checks/${month.value}${selectedYear}`}
                 key={`mes-${index}]`}
-                className="col-span-12 sm:col-span-6 lg:col-span-4 xl:col-span-3 2xl:col-span-2">
+                className="col-span-6 sm:col-span-6 lg:col-span-4 xl:col-span-3 2xl:col-span-2">
                 <CardMonths
                   active={Number(month.value) === new Date().getMonth() + 1}
                   month={month.label}
@@ -183,20 +162,11 @@ export const ReporteChecks = ({
         <h2 className="mt-6 text-xl font-semibold">
           Registro anual de checks de los empleados
         </h2>
-        <p className="text-gray-400 text-sm">{selectedYear}</p>
-        <Table
-          data={
-            empleados
-              ? empleados
-                  .slice(1)
-                  .filter((emp) =>
-                    selectedEmpleado ? emp.value === selectedEmpleado : true
-                  )
-              : []
-          }
-          headerData={headersTableChecks}
-          colSpan={3}
-          renderRow={renderRow}
+        <p className="text-gray-400 text-sm mb-2">{selectedYear}</p>
+        <DataTable
+          columns={getChecksColumns(checkData)}
+          data={empleadosConChecks}
+          getRowClassName={() => "odd:bg-slate-50 even:bg-white"}
         />
       </div>
     </div>

@@ -1,43 +1,28 @@
-export const dynamic = "force-dynamic";
-
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import CargaTres from "./CargaTres";
-import { reservasSelect } from "@/utils/supabase/querys";
+import { createServerSupabase } from "@/utils/supabase/server";
+import { getReservaById } from "@/lib/db/reservas";
+import { getEmpleados } from "@/lib/db/empleados";
+import { getDeptos } from "@/lib/db/deptos";
 
 export default async function Page({ params }: { params: { id: string } }) {
+  const supabase = await createServerSupabase();
   const reservaId = Number(params.id);
-  const supabase = createServerComponentClient({ cookies });
+  const reservaData = await getReservaById(supabase, reservaId);
+  const empleados = await getEmpleados(supabase);
+  const departamentos = await getDeptos(supabase);
 
-  const { data, error } = await supabase
-    .from("reservas")
-    .select(reservasSelect)
-    .eq("id", reservaId)
-    .single();
-
-  if (error || !data?.estado_reserva || data.estado_reserva !== "en_proceso") {
+  if (
+    !reservaData?.estado_reserva ||
+    reservaData.estado_reserva !== "en_proceso"
+  ) {
     redirect("/reservas");
   }
 
-  const { data: departamentos, error: departamentosFetchError } = await supabase
-    .from("departamentos")
-    .select(`*, usuario:usuarios(*)`)
-    .order("id", { ascending: false });
-
-  if (departamentosFetchError) throw new Error(departamentosFetchError.message);
-
-  const { data: empleados, error: empleadosFetchError } = await supabase
-    .from("usuarios")
-    .select(`nombre, apellido, id`)
-    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin"])
-    .eq("isActive", true);
-
-  if (empleadosFetchError) throw new Error(empleadosFetchError.message);
-
   return (
     <CargaTres
-      reservaFromServer={data}
+      reservaFromServer={reservaData}
       deptosFromServer={departamentos}
       empleadosFromServer={empleados}
     />

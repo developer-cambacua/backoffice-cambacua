@@ -1,32 +1,23 @@
-export const dynamic = 'force-dynamic';
-
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import CargaDos from "./CargaDos";
-import { reservasSelect } from "@/utils/supabase/querys";
+import { createServerSupabase } from "@/utils/supabase/server";
+import { getReservaById } from "@/lib/db/reservas";
+import { getEmpleados } from "@/lib/db/empleados";
 
 export default async function Page({ params }: { params: { id: string } }) {
+  const supabase = await createServerSupabase();
   const reservaId = Number(params.id);
-  const supabase = createServerComponentClient({ cookies });
+  const reservaData = await getReservaById(supabase, reservaId);
+  const empleados = await getEmpleados(supabase);
 
-  const { data, error } = await supabase
-    .from("reservas")
-    .select(reservasSelect)
-    .eq("id", reservaId)
-    .single();
-
-  if (error || !data?.estado_reserva || data.estado_reserva !== "reservado") {
+  if (
+    !reservaData?.estado_reserva ||
+    reservaData.estado_reserva !== "reservado"
+  ) {
     redirect("/reservas");
   }
 
-  const {data: empleados, error: errorFetchEmpleados} = await supabase
-      .from("usuarios")
-      .select(`nombre, apellido, id`)
-      .in("rol", ["admin", "limpieza", "appOwner", "superAdmin", "propietario"])
-      .eq("isActive", true);
-  
-    if (errorFetchEmpleados) throw new Error(errorFetchEmpleados.message);
-
-  return <CargaDos reservaFromServer={data} empleadosFromServer={empleados} />;
+  return (
+    <CargaDos reservaFromServer={reservaData} empleadosFromServer={empleados} />
+  );
 }

@@ -2,7 +2,7 @@ export function formatearADolar(value: number) {
   return value.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: value % 1 === 0 ? 0 : 2, // Sin decimales si el valor es entero
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
   });
 }
 
@@ -16,7 +16,6 @@ export type Currency = "ARS" | "USD" | "EUR";
 export type Collector = "TAMARA" | "MILAGROS" | "PROPIETARIO";
 export type TWeb = "airbnb" | "booking" | "web";
 
-// Definimos una interfaz para los valores de cambio
 interface ExchangeRates {
   dolarOficial: number;
   dolarBlue: number;

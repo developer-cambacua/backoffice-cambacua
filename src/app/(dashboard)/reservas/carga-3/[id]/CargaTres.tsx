@@ -23,45 +23,49 @@ import Image from "next/image";
 import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
 import {
   defaultValuesReservas3,
-  zodRSchema3,
+  completeReservaSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { NewSelect } from "@/components/select/NewSelect";
 import { MinusCircle, PlusIcon } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Toast } from "@/components/toast/Toast";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { fetchDepartamentos, fetchEmpleados } from "@/backup/fetchs";
 import {
-  fetchDepartamentos,
-  fetchEmpleados,
-  fetchReserva,
-} from "@/utils/functions/fetchs";
+  IDepartamento,
+  IEmpleados,
+  IReservasDefault,
+  StatusType,
+} from "@/types/supabaseTypes";
+import { useUpdateReserva } from "@/hooks/useReservas";
+import { getReservaById } from "@/lib/db/reservas";
 
 export default function CargaTres({
   reservaFromServer,
   deptosFromServer,
   empleadosFromServer,
 }: {
-  reservaFromServer: any;
-  deptosFromServer: any[];
-  empleadosFromServer: any[];
+  reservaFromServer: IReservasDefault;
+  deptosFromServer: IDepartamento[];
+  empleadosFromServer: IEmpleados[];
 }) {
+  const id = reservaFromServer.id;
   const router = useRouter();
-  const [disabled, setDisabled] = useState<boolean>(false);
+  const updateReserva = useUpdateReserva(id);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [currentSchema, setCurrentSchema] = useState(z.object({}));
   const [formData, setFormData] = useState<Partial<FormData>>({});
-  const queryClient = useQueryClient();
 
   /* -------------------------------------- Supabase -------------------------------------- */
 
   const { data: reserva } = useQuery({
     queryKey: ["reserva"],
-    queryFn: () => fetchReserva(reservaFromServer.id),
+    queryFn: () => getReservaById(supabase, id),
     initialData: reservaFromServer,
     gcTime: 1000 * 60 * 5,
   });
@@ -80,7 +84,7 @@ export default function CargaTres({
 
   /* -------------------------------------- Fin Supabase -------------------------------------- */
 
-  type FormData = z.infer<typeof zodRSchema3>;
+  type FormData = z.infer<typeof completeReservaSchema>;
 
   type FieldName = keyof FormData;
 
@@ -117,13 +121,12 @@ export default function CargaTres({
   });
 
   const responsables = watch("responsables_limpieza") || [];
-
   const viatico = watch("viaticos");
   const fichaLavadero = watch("ficha_lavadero");
   const checkOutEspecial = watch("check_out_especial");
 
   useEffect(() => {
-    let newSchema: any = zodRSchema3;
+    let newSchema: any = completeReservaSchema;
 
     if (viatico === "si") {
       newSchema = newSchema.extend({
@@ -223,7 +226,9 @@ export default function CargaTres({
       Object.fromEntries(
         currentFields.map((field) => [
           field,
-          zodRSchema3.shape[field as keyof typeof zodRSchema3.shape],
+          completeReservaSchema.shape[
+            field as keyof typeof completeReservaSchema.shape
+          ],
         ])
       )
     );
@@ -236,74 +241,39 @@ export default function CargaTres({
 
   const onSubmit = async (data: any) => {
     try {
-      setDisabled(true);
-
-      if (
-        Array.isArray(data.responsables_limpieza) &&
-        data.responsables_limpieza.length > 0
-      ) {
-        const nuevosResponsables = data.responsables_limpieza.map(
-          (item: any) => {
-            const tiempo_limpieza = calculateTimeDifference(
-              item.hora_ingreso_limpieza || "00:00",
-              item.hora_egreso_limpieza || "00:00"
-            );
-
-            return {
-              reserva_id: reserva?.id,
+      const payload = {
+        cantidad_fichas_lavadero: data.cantidad_fichas_lavadero
+          ? stringToInt(data.cantidad_fichas_lavadero)
+          : null,
+        responsable_check_out: formData.responsable_check_out,
+        check_out_especial: formData.check_out_especial === "no" ? false : true,
+        valor_viatico: data.valor_viatico
+          ? stringToFloat(data.valor_viatico)
+          : null,
+        destino_viatico:
+          data.a_donde_viatico === 0 ? null : data.a_donde_viatico,
+        estado_reserva: "completado" as StatusType,
+        responsables_limpieza: Array.isArray(data.responsables_limpieza)
+          ? data.responsables_limpieza.map((item: any) => ({
               empleado_id: item.empleado_id,
-              hora_ingreso: item.hora_ingreso_limpieza,
-              hora_egreso: item.hora_egreso_limpieza,
-              tiempo_limpieza,
-            };
-          }
-        );
+              hora_ingreso_limpieza: item.hora_ingreso_limpieza,
+              hora_egreso_limpieza: item.hora_egreso_limpieza,
+            }))
+          : [],
+      };
 
-        const { error: responsablesLimpError } = await supabase
-          .from("responsables_limpieza")
-          .insert(nuevosResponsables);
-
-        if (responsablesLimpError) {
-          setDisabled(false);
-          console.error("el error es:", responsablesLimpError);
-          return;
-        }
-      }
-
-      const { error: reservaFormError } = await supabase
-        .from("reservas")
-        .update({
-          cantidad_fichas_lavadero: data.cantidad_fichas_lavadero
-            ? stringToInt(data.cantidad_fichas_lavadero)
-            : null,
-          responsable_check_out: formData.responsable_check_out,
-          check_out_especial:
-            formData.check_out_especial === "no" ? false : true,
-          valor_viatico: data.valor_viatico
-            ? stringToFloat(data.valor_viatico)
-            : null,
-          destino_viatico:
-            data.a_donde_viatico === 0 ? null : data.a_donde_viatico,
-          estado_reserva: "completado",
-        })
-        .eq("id", reservaFromServer.id);
-
-      if (reservaFormError) {
-        setDisabled(false);
-        console.error(reservaFormError);
-        return;
-      }
-
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="success">
-            <p>Se ha actualizado con éxito la reserva.</p>
-          </Toast>
-        ),
-        { duration: 5000 }
-      );
-      queryClient.invalidateQueries({ queryKey: ["reservas"] });
-      router.push("/reservas");
+      updateReserva.mutate(payload, {
+        onSuccess: () => {
+          toast.custom(
+            (id) => (
+              <Toast id={id} variant="success">
+                <p>Se ha actualizado con éxito la reserva.</p>
+              </Toast>
+            ),
+            { duration: 5000 }
+          );
+        },
+      });
     } catch (error) {
       console.error(error);
     }
@@ -1165,7 +1135,10 @@ export default function CargaTres({
                                 variant="solid"
                                 color="primary"
                                 type="submit"
-                                disabled={disabled}>
+                                disabled={
+                                  updateReserva.isPending ||
+                                  updateReserva.isSuccess
+                                }>
                                 Finalizar
                               </Button>
                             </div>

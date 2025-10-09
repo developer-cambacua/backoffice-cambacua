@@ -1,12 +1,5 @@
-import React from "react";
 import { cn } from "@/lib/utils";
-
-type StatusType =
-  | "reservado"
-  | "en_proceso"
-  | "completado"
-  | "cancelado"
-  | "desconocido";
+import { StatusType } from "@/types/supabaseTypes";
 
 interface StatusChipProps {
   status: StatusType;
@@ -28,11 +21,11 @@ const statusConfig: Record<StatusType, { label: string; className: string }> = {
   },
   cancelado: {
     label: "Cancelado",
-    className: "bg-red-400",
+    className: "bg-red-500",
   },
   desconocido: {
     label: "Desconocido",
-    className: "bg-gray-400",
+    className: "bg-violet-400",
   },
 };
 

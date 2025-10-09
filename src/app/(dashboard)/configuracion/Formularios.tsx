@@ -13,6 +13,7 @@ export default function Formularios({
     <div className="grid grid-cols-12 gap-2">
       <div className="col-span-12">
         <div className="outline outline-1 outline-gray-300 rounded-lg bg-white py-6 px-4">
+          <h2 className="font-semibold text-xl mb-4">Cambiar configuración de los formularios</h2>
           <div className="flex justify-between gap-6">
             <div className="flex flex-col">
               <h3 className="font-semibold">Permitir crear reservas con fecha anterior a la actual</h3>

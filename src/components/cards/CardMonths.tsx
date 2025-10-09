@@ -32,11 +32,11 @@ export const CardMonths = ({
         <div className="flex items-center justify-between gap-x-4 my-4">
           <div>
             <p className="text-lg font-bold">{quantityIns}</p>
-            <p className="text-sm text-slate-400">Check-ins</p>
+            <p className="text-xs sm:text-sm text-slate-400">Check-ins</p>
           </div>
           <div>
             <p className="text-lg font-bold">{quantityOuts}</p>
-            <p className="text-sm text-slate-400">Check-outs</p>
+            <p className="text-xs sm:text-sm text-slate-400">Check-outs</p>
           </div>
         </div>
       </div>

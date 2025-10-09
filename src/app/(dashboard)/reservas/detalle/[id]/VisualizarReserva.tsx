@@ -1,65 +1,86 @@
 "use client";
 
+import { useState } from "react";
 import { Chip, getStatusProps } from "@/components/chip/Chip";
+import { IReservasDefault, IResponsableLimpieza } from "@/types/supabaseTypes";
 import { formatTimestampDay, getAppReserva } from "@/utils/functions/functions";
-import { supabase } from "@/utils/supabase/client";
 import clsx from "clsx";
 import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import useDownloader from "react-use-downloader";
+import { Toast } from "@/components/toast/Toast";
+import { toast } from "sonner";
 
 interface IData {
-  id: string;
-  reservaFromServer: any;
-  responsablesFromServer: any;
+  reservaFromServer: IReservasDefault;
+  responsablesFromServer: IResponsableLimpieza[] | null;
+  fileUrlFromServer: string | null;
+}
+
+function getDisplayName(
+  entity: number | { nombre: string; apellido?: string } | null
+) {
+  if (!entity || typeof entity === "number") return "-";
+  return entity.apellido
+    ? `${entity.nombre} ${entity.apellido}`
+    : entity.nombre;
 }
 
 export default function VisualizarReserva({
-  id,
   reservaFromServer,
   responsablesFromServer,
+  fileUrlFromServer,
 }: IData) {
   const reserva = reservaFromServer;
   const responsablesLimpieza = responsablesFromServer;
   const router = useRouter();
-  const reservaId = Number(id);
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const reservaId = reservaFromServer.id;
+  const [fileUrl, setFileUrl] = useState(fileUrlFromServer);
+  const [urlTimestamp, setUrlTimestamp] = useState(Date.now());
 
   const { download } = useDownloader();
 
-  const handleDownload = () => {
-    if (fileUrl) {
-      const fileNameWithExtension =
-        reserva?.documentacion_huesped || `documentacion-huesped-${reservaId}`;
-      const parts = fileNameWithExtension.split(".");
-      const fileExtension = parts.length > 1 ? parts.pop() : "pdf";
-      const fileName = parts.join(".");
-      const finalFileName = `${fileName}.${fileExtension}`;
+  const handleDownload = async () => {
+    if (!reserva?.documentacion_huesped) return;
+    const now = Date.now();
+    let signedUrlToUse = fileUrl;
+    const EXPIRATION_MS = 5 * 60 * 1000; // 5 minutos.
+    if (!fileUrl || now - urlTimestamp > EXPIRATION_MS) {
+      const res = await fetch(
+        `/api/documentacion/${reserva.documentacion_huesped}`
+      );
+      const data = await res.json();
 
-      download(fileUrl, finalFileName);
+      if (!data.signedUrl) {
+        toast.custom(
+          (id) => (
+            <Toast id={id} variant="error">
+              <div>
+                <p className="max-w-[30ch]">
+                  Ha ocurrido un error obteniendo la documentación del huésped.
+                </p>
+              </div>
+            </Toast>
+          ),
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      signedUrlToUse = data.signedUrl;
+      setFileUrl(signedUrlToUse);
+      setUrlTimestamp(now);
     }
+    const fileNameWithExtension =
+      reserva?.documentacion_huesped || `documentacion-huesped-${reservaId}`;
+    const parts = fileNameWithExtension.split(".");
+    const fileExtension = parts.length > 1 ? parts.pop() : "pdf";
+    const fileName = parts.join(".");
+    const finalFileName = `${fileName}.${fileExtension}`;
+
+    if (!signedUrlToUse) return;
+    download(signedUrlToUse, finalFileName);
   };
-
-  useEffect(() => {
-    if (reserva?.documentacion_huesped) {
-      const fetchFileUrl = async () => {
-        const fileName = reserva.documentacion_huesped;
-        const bucketName = "documentacion";
-        const { data, error } = await supabase.storage
-          .from(bucketName)
-          .createSignedUrl(fileName, 300);
-
-        if (error) {
-          console.error("Error al generar la URL firmada:", error.message);
-        } else {
-          setFileUrl(data?.signedUrl || null);
-        }
-      };
-
-      fetchFileUrl();
-    }
-  }, [reserva]);
 
   const infoHuespedFields = [
     {
@@ -99,11 +120,11 @@ export default function VisualizarReserva({
   const infoTiempoFields = [
     {
       subtitle: "Check in",
-      value: `${reserva?.check_in}`,
+      value: `${reserva?.check_in ?? "-"}`,
     },
     {
       subtitle: "Responsable check in",
-      value: `${reserva?.responsable_check_in.nombre} ${reserva?.responsable_check_in.apellido}`,
+      value: `${getDisplayName(reserva?.responsable_check_in)}`,
     },
     {
       subtitle: "Check in especial",
@@ -111,11 +132,11 @@ export default function VisualizarReserva({
     },
     {
       subtitle: "Check out",
-      value: `${reserva?.check_out}`,
+      value: `${reserva?.check_out ?? "-"}`,
     },
     {
       subtitle: "Responsable Check out",
-      value: `${reserva?.responsable_check_out.nombre} ${reserva?.responsable_check_out.apellido}`,
+      value: `${getDisplayName(reserva?.responsable_check_out)}`,
     },
     {
       subtitle: "Check out especial",
@@ -132,11 +153,11 @@ export default function VisualizarReserva({
     },
     {
       subtitle: "Destino viatico",
-      value: `${reserva?.destino_viatico?.nombre || "-"}`,
+      value: `${getDisplayName(reserva?.destino_viatico) || "-"}`,
     },
     {
       subtitle: "Fichas de lavandería",
-      value: `${reserva?.cantidad_fichas_lavadero || "-"}`,
+      value: `${reserva?.cantidad_fichas_lavadero ?? "-"}`,
     },
   ];
 
@@ -196,15 +217,10 @@ export default function VisualizarReserva({
                       onClick={handleDownload}
                       disabled={!fileUrl}
                       type="button"
-                      className="text-secondary-500 disabled:text-gray-500 enabled:hover:text-secondary-600 enabled:hover:underline font-semibold text-sm">
+                      className="text-secondary-500 disabled:text-gray-400 enabled:hover:text-secondary-600 enabled:hover:underline font-semibold text-sm">
                       <span className="flex items-center gap-x-2">
-                        <Download
-                          className={clsx(
-                            "w-4 h-4",
-                            !fileUrl ? "text-gray-500" : "text-secondary-600"
-                          )}
-                        />
-                        Descargar documentación
+                        <Download className={clsx("w-4 h-4 text-inherit")} />
+                        Descargar documentación {!fileUrl && "(No disponible)"}
                       </span>
                     </button>
                   </div>
@@ -269,27 +285,35 @@ export default function VisualizarReserva({
               <div className="col-span-12 sm:col-span-6">
                 <p className="font-semibold">¿Quién limpió?</p>
                 <ul className="flex flex-col list-disc list-inside">
-                  {empleados.map((item: any, index: number) => {
-                    return (
-                      <li
-                        className={"text-sm"}
-                        key={`${item.empleado.id}-${item.empleado.apellido}-${index}`}>
-                        {item.empleado.nombre} {item.empleado.apellido}
-                      </li>
-                    );
-                  })}
+                  {empleados.length > 0 ? (
+                    empleados.map((item: any, index: number) => {
+                      return (
+                        <li
+                          className={"text-sm"}
+                          key={`${item.empleado.id}-${item.empleado.apellido}-${index}`}>
+                          {item.empleado.nombre} {item.empleado.apellido}
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li className="text-sm text-gray-500">Aún no hay datos</li>
+                  )}
                 </ul>
               </div>
               <div className="col-span-12 sm:col-span-6">
                 <p className="font-semibold">Cantidad horas</p>
                 <ul className="flex flex-col list-disc list-inside">
-                  {empleados.map((item: any, index: number) => (
-                    <li
-                      className="text-sm text-gray-500"
-                      key={`horas-${item.empleado.id}-${index}`}>
-                      {item.tiempo_limpieza ?? "—"}hs
-                    </li>
-                  ))}
+                  {empleados.length > 0 ? (
+                    empleados.map((item: any, index: number) => (
+                      <li
+                        className="text-sm text-gray-500"
+                        key={`horas-${item.empleado.id}-${index}`}>
+                        {item.tiempo_limpieza ?? "—"}hs
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">Aún no hay datos</li>
+                  )}
                 </ul>
               </div>
               {infoLimpiezaFields.map((field, index) => {

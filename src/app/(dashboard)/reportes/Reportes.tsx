@@ -1,25 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
 import { TabsSection } from "@/components/tabs/Tabs";
 import { ReporteChecks } from "./ReporteChecks";
 import { ReporteLimpieza } from "./ReporteLimpieza";
 import { ReporteFichas } from "./ReporteFichas";
 import { reservasSelect } from "@/utils/supabase/querys";
 import { supabase } from "@/utils/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { IReservasDefault } from "@/types/supabaseTypes";
+
+interface EmpleadosTransformedData {
+  key: string;
+  label: string;
+  value: number | undefined;
+}
 
 export default function Reportes({
   reservasFromServer,
   empleadosFromServer,
   responsablesFromServer,
 }: {
-  reservasFromServer: any;
-  empleadosFromServer: any;
-  responsablesFromServer: any;
+  reservasFromServer: IReservasDefault[];
+  empleadosFromServer: EmpleadosTransformedData[];
+  responsablesFromServer: any[];
 }) {
-  const queryClient = useQueryClient();
-
   const fetchReservas = async () => {
     const { data, error } = await supabase
       .from("reservas")
@@ -100,22 +104,6 @@ export default function Reportes({
     initialData: responsablesFromServer,
   });
 
-  useEffect(() => {
-    const reservasSubscription = supabase
-      .channel("reservasChannel")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "reservas" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["reservas"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(reservasSubscription);
-    };
-  }, [queryClient]);
   return (
     <>
       <h1 className="font-bold text-3xl">Reportes</h1>

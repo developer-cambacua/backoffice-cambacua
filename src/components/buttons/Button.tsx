@@ -29,7 +29,7 @@ export const Button = ({
     "rounded-sm font-medium transition-all px-4 py-2 disabled:cursor-not-allowed duration-200 border-2";
 
   const variantClasses: Record<ButtonVariant, string> = {
-    solid: "",
+    solid: "border",
     ghost: "bg-transparent border-transparent",
     outline: "border enabled:border-gray-300",
     unstyled: "",
@@ -46,11 +46,11 @@ export const Button = ({
     },
     secondary: {
       solid:
-        "bg-secondary-900 text-white hover:bg-secondary-500 enabled:border-secondary-900 enabled:hover:border-secondary-500 focus:border-secondary-500 disabled:bg-gray-200 disabled:text-gray-300",
+        "bg-secondary-900 text-white enabled:hover:bg-secondary-500 enabled:border-secondary-900 enabled:hover:border-secondary-500 focus:border-secondary-500 disabled:bg-gray-200 disabled:text-gray-300",
       ghost:
         "text-secondary-900 hover:bg-secondary-900/10 hover:text-secondary-950",
       outline:
-        "text-secondary-900 hover:text-white hover:bg-secondary-900 border-secondary-900",
+        "text-secondary-900 enabled:hover:text-white enabled:hover:bg-secondary-900 enabled:hover:border-secondary-900 disabled:border-gray-100 disabled:text-gray-400 disabled:bg-gray-100",
       unstyled: "",
     },
     tertiary: {
@@ -58,12 +58,12 @@ export const Button = ({
         "bg-gray-600 text-white hover:bg-gray-700 border border-gray-600 hover:border-gray-700 disabled:bg-gray-200 disabled:text-gray-300",
       ghost: "enabled:text-gray-600 enabled:hover:text-gray-700 enabled:hover:bg-gray-100 disabled:text-gray-400",
       outline:
-        "text-gray-600 hover:text-white hover:bg-gray-600 border-gray-600",
+        "text-gray-600 hover:text-white enabled:hover:bg-gray-600 border-gray-600",
       unstyled: "",
     },
     error: {
       solid:
-        "bg-red-500 text-white hover:bg-red-600 disabled:bg-gray-300 disabled:text-gray-400 border-red-500 enabled:hover:border-red-600 disabled:border-gray-300",
+        "bg-red-500 text-white enabled:hover:bg-red-600 disabled:bg-gray-300 disabled:text-gray-400 border-red-500 enabled:hover:border-red-600 disabled:border-gray-300",
       ghost: "text-red-500 enabled:hover:bg-red-500/10 enabled:hover:text-red-600 disabled:text-gray-400",
       outline: "text-red-500 hover:text-white hover:bg-red-500 border-red-500",
       unstyled: "",

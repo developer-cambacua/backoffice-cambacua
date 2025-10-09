@@ -21,31 +21,21 @@ interface Token {
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  const authPaths = ["/"];
-  const publicPaths = ["/access-denied", "/error", "/politica-de-privacidad"];
-
-  const isAuthPath = authPaths.includes(pathname);
-  const isPublicPath = publicPaths.includes(pathname);
-
   try {
     const token = (await getToken({
       req,
       secret: process.env.NEXTAUTH_SECRET,
     })) as Token | null;
 
-    if (isPublicPath) {
-      return NextResponse.next();
-    }
-
-    if (isAuthPath && token) {
+    if (pathname === "/" && token) {
       return NextResponse.redirect(new URL("/reservas", req.url));
     }
 
-    if (!token && !isAuthPath) {
+    if (!token && pathname !== "/") {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    if (token && !isAuthPath) {
+    if (token && pathname !== "/") {
       const { rol, email } = token;
 
       if (!email) {
@@ -81,5 +71,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|access-denied|error|politica-de-privacidad).*)",
+  ],
 };

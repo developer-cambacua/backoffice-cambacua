@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import "@/css/style.css";
 import "react-toastify/dist/ReactToastify.min.css";
-
-import { DevProvider } from "@/context/DevContext";
 import { Providers } from "./Providers";
-import { AlertProvider } from "@/context/AlertContext";
-
 import { FormProvider } from "@/context/FormContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import QueryProvider from "@/context/QueryProvider";
-import { UserInitializer } from "@/providers/UserInitializer";
 import { Toaster } from "@/components/ui/sonner";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
-import ConfigLoader from "@/providers/ConfigLoader";
+import { ScrollToTop } from "@/components/scrollToTop/ScrollToTop";
+import { AppDataWrapper } from "@/context/AppDataProvider";
+import { RealtimeProvider } from "@/context/RealtimeProvider";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -38,24 +31,19 @@ export default function RootLayout({
   return (
     <Providers>
       <FormProvider>
-        <DevProvider>
-          <AlertProvider>
-            <QueryProvider>
-              <UserInitializer />
-              <ConfigLoader />
-              <html lang="es" className="antialiased">
-                <body
-                  className={`${openSans.variable} ${GeistSans.variable} ${GeistMono.variable} text-secondary-950 font-openSans bg-slate-50`}>
-                  {children}
-                  <ReactQueryDevtools initialIsOpen={false} />
-                  <Toaster position="top-right" richColors closeButton />
-                  {/* <Analytics />
-                  <SpeedInsights /> */}
-                </body>
-              </html>
-            </QueryProvider>
-          </AlertProvider>
-        </DevProvider>
+        <QueryProvider>
+          <RealtimeProvider>
+            <html lang="es" className="antialiased">
+              <body
+                className={`${openSans.variable} text-secondary-950 font-openSans bg-slate-50`}>
+                <AppDataWrapper>{children}</AppDataWrapper>
+                <ReactQueryDevtools initialIsOpen={false} />
+                <Toaster position="top-right" richColors closeButton />
+                <ScrollToTop />
+              </body>
+            </html>
+          </RealtimeProvider>
+        </QueryProvider>
       </FormProvider>
     </Providers>
   );

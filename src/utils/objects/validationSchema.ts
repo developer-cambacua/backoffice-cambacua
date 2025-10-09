@@ -4,7 +4,7 @@ import { esHoraValida, normalizarHoraInput } from "../functions/functions";
 /* ------------- Validación y default values para reservas 1 , 2 y 3 ------------- */
 
 export const defaultValuesReservas = {
-  departamento_id: 0,
+  departamento: 0,
   nombre_completo: "",
   telefono: "",
   numero_reserva: "",
@@ -20,7 +20,7 @@ export const defaultValuesReservas = {
   observaciones: "",
 };
 
-export const zodRSchema = z.object({
+export const createReservaSchema = z.object({
   departamento: z.number().min(1, "Ingresá un departamento").default(0),
   nombre_completo: z
     .string()
@@ -49,12 +49,14 @@ export const zodRSchema = z.object({
     .default(""),
   fecha_estadia: z
     .object({
-      from: z
-        .date({ required_error: "Seleccioná la fecha de ingreso" })
-        .optional(),
-      to: z
-        .date({ required_error: "Seleccioná la fecha de egreso" })
-        .optional(),
+      from: z.preprocess(
+        (val) => (typeof val === "string" ? new Date(val) : val),
+        z.date().optional()
+      ),
+      to: z.preprocess(
+        (val) => (typeof val === "string" ? new Date(val) : val),
+        z.date().optional()
+      ),
     })
     .superRefine((data, ctx) => {
       if (!data.from || !data.to) {
@@ -64,7 +66,8 @@ export const zodRSchema = z.object({
           path: [],
         });
       }
-    }),
+    })
+    .optional(),
   check_in: z
     .string({
       required_error: "La hora es obligatoria",
@@ -92,25 +95,118 @@ export const zodRSchema = z.object({
       /^\d{0,9}(\.\d{0,2})?$/,
       "Solo se permiten números con hasta dos decimales"
     ),
-  valor_comision_app: z.string().optional(),
+  valor_comision_app: z.string().optional().nullable(),
   extra_check: z
     .string()
     .regex(
       /^\d{0,9}(\.\d{0,2})?$/,
       "Solo se permiten números con hasta dos decimales"
     )
-    .optional(),
+    .optional()
+    .nullable(),
   media_estadia: z
     .string()
     .regex(
       /^\d{0,9}(\.\d{0,2})?$/,
       "Solo se permiten números con hasta dos decimales"
     )
-    .optional(),
+    .optional()
+    .nullable(),
   observaciones: z
     .string()
     .max(250, "Las observaciones no pueden superar los 250 caracteres")
-    .optional(),
+    .optional()
+    .nullable(),
+});
+
+export const createReservaSchemaBack = z.object({
+  departamento_id: z.number().min(1, "Ingresá un departamento").default(0),
+  nombre_completo: z
+    .string()
+    .min(1, "Este campo es obligatorio")
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ'´ ]+$/,
+      "El nombre contiene caracteres no válidos"
+    ),
+  telefono_provisorio: z
+    .string()
+    .min(1, "Este campo es obligatorio")
+    .regex(/^\d{8,15}$/, "El número de teléfono no es válido."),
+  cantidad_huespedes: z
+    .number()
+    .min(1, "El mínimo es 1 huésped.")
+    .max(10, "El máximo es 10 huéspedes."),
+  numero_reserva: z
+    .string()
+    .min(1, "Este campo es obligatorio")
+    .min(4, "El numero de reserva debe tener al menos 4 dígitos"),
+  app_reserva: z
+    .string()
+    .min(1, "Este campo es obligatorio")
+    .min(2, "La app debe tener al menos 2 caracteres")
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Seleccioná un valor.")
+    .default(""),
+  fecha_ingreso: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date({ required_error: "Fecha de ingreso inválida" })
+  ),
+  fecha_egreso: z.preprocess(
+    (val) => (typeof val === "string" ? new Date(val) : val),
+    z.date({ required_error: "Fecha de egreso inválida" })
+  ),
+  check_in: z
+    .string({
+      required_error: "La hora es obligatoria",
+      invalid_type_error: "Ingresá una hora válida",
+    })
+    .transform((val) => normalizarHoraInput(val))
+    .refine((val) => esHoraValida(val), {
+      message: "Ingresá una hora válida",
+    }),
+  check_out: z
+    .string({
+      required_error: "La hora es obligatoria",
+      invalid_type_error: "Ingresá una hora válida",
+    })
+    .transform((val) => normalizarHoraInput(val))
+    .refine((val) => esHoraValida(val), {
+      message: "Ingresá una hora válida",
+    }),
+  valor_reserva: z
+    .string()
+    .min(1, "Ingresá un valor de reserva")
+    .regex(
+      /^\d{0,9}(\.\d{0,2})?$/,
+      "Solo se permiten números con hasta dos decimales"
+    ),
+  valor_comision_app: z.string().optional().nullable(),
+  extra_check: z
+    .string()
+    .regex(
+      /^\d{0,9}(\.\d{0,2})?$/,
+      "Solo se permiten números con hasta dos decimales"
+    )
+    .optional()
+    .nullable(),
+  media_estadia: z
+    .string()
+    .regex(
+      /^\d{0,9}(\.\d{0,2})?$/,
+      "Solo se permiten números con hasta dos decimales"
+    )
+    .optional()
+    .nullable(),
+  observaciones: z
+    .string()
+    .max(250, "Las observaciones no pueden superar los 250 caracteres")
+    .optional()
+    .nullable(),
+  estado_reserva: z.enum([
+    "reservado",
+    "en_proceso",
+    "completado",
+    "desconocido",
+  ]),
 });
 
 /* Etapa 2 */
@@ -145,7 +241,7 @@ export const defaultValuesReservas2 = {
   observaciones_sobre_el_pago: "",
 };
 
-export const zodRSchema2 = z.object({
+export const updateReservaSchema = z.object({
   tipo_identificacion: z
     .enum(["DNI", "Pasaporte", "Cédula", "Otros"])
     .default("DNI"),
@@ -284,7 +380,7 @@ export const defaultValuesReservas3 = {
   a_donde_viatico: 0,
 };
 
-export const zodRSchema3 = z.object({
+export const completeReservaSchema = z.object({
   check_out_especial: z.enum(["si", "no"]).default("no"),
   responsable_check_out: z
     .number({
@@ -347,7 +443,7 @@ export const defaultValueUsers = {
   rol: "",
 };
 
-export const zodUserSchema = z.object({
+export const userSchema = z.object({
   nombre: z
     .string()
     .min(1, "Este campo es obligatorio")
@@ -368,11 +464,11 @@ export const zodUserSchema = z.object({
 export const defaultValueDeptos = {
   nombre: "",
   direccion: "",
-  propietario: "",
+  propietario: 0,
   max_huespedes: 0,
 };
 
-export const zodDeptosSchema = z.object({
+export const deptosSchema = z.object({
   nombre: z
     .string()
     .min(1, "Este campo es obligatorio")

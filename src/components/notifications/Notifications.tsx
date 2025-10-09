@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
@@ -13,6 +14,9 @@ import {
   Sun,
   Star,
 } from "lucide-react";
+import { useNotificaciones } from "@/hooks/useNotificaciones";
+import { toast } from "sonner";
+import { Toast } from "../toast/Toast";
 
 type NotificationType =
   | "info"
@@ -24,10 +28,26 @@ type NotificationType =
   | "light"
   | "special";
 
-type Notification = { id: string; message: string; type: NotificationType };
+export type Notification = {
+  id: string;
+  message: string;
+  type: NotificationType;
+};
+
+// interface NotificationsProps {
+//   initialData: Notification[];
+// }
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const queryClient = useQueryClient();
+  const [hiddenNotifications, setHiddenNotifications] = useState<Set<string>>(
+    new Set()
+  );
+  const {
+    data: NotificationsData = [],
+    error,
+    isLoading,
+  } = useNotificaciones();
 
   const alertStyles: Record<NotificationType, string> = {
     info: "bg-blue-100 border-blue-500 text-blue-500",
@@ -57,26 +77,14 @@ const Notifications = () => {
     []
   );
 
-  const fetchNotifications = async () => {
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("id, message, type")
-      .eq("visible", true)
-      .gte("expires_at", new Date().toISOString());
-
-    if (error) console.error("Error fetching notifications:", error);
-    else setNotifications(data);
-  };
-
   useEffect(() => {
-    fetchNotifications();
     const channel = supabase
       .channel("realtime-notifications")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
         () => {
-          fetchNotifications();
+          queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
         }
       )
       .subscribe();
@@ -84,19 +92,38 @@ const Notifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
+
+  const visibleNotifications = NotificationsData.filter(
+    (notification: Notification) => !hiddenNotifications.has(notification.id)
+  );
 
   const handleClose = (notifId: string) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== notifId));
+    setHiddenNotifications((prev) => new Set([...prev, notifId]));
   };
 
-  if (hiddenRoutes.includes(pathname)) return;
+  useEffect(() => {
+    if (error) {
+      toast.custom(
+        (id) => (
+          <Toast id={id} variant="error">
+            <div>
+              <p>Ha ocurrido un error: {error.message}</p>
+            </div>
+          </Toast>
+        ),
+        { duration: 5000 }
+      );
+    }
+  }, [error]);
 
-  if (notifications.length === 0) return null;
+  if (hiddenRoutes.includes(pathname)) return;
+  if (isLoading) return null;
+  if (visibleNotifications.length === 0) return null;
 
   return (
     <div className="grid grid-cols-12 gap-4 mb-2">
-      {notifications.map((notif) => (
+      {visibleNotifications.map((notif: Notification) => (
         <div className="col-span-12 md:col-span-8 lg:col-span-6" key={notif.id}>
           <div
             className={`border-l-8 rounded-lg py-3 px-4 ${
@@ -109,7 +136,8 @@ const Notifications = () => {
               </div>
               <button
                 onClick={() => handleClose(notif.id)}
-                className="shrink-0">
+                className="shrink-0"
+                aria-label="Ocultar alerta">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   height="24px"

@@ -184,13 +184,13 @@ export const calculateDaysBetween = (
   return diffInDays;
 };
 
-export const sanitizeData = (data: any) => {
+export const sanitizeData = <T extends object>(data: T): T => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => [
       key,
       value === "" ? null : value,
     ])
-  );
+  ) as T;
 };
 
 export const renameFile = (fileName: string) => {
@@ -428,3 +428,51 @@ export function esHoraValida(value: string | null): boolean {
   const m = parseInt(mm, 10);
   return h >= 0 && h <= 23 && m >= 0 && m <= 59;
 }
+
+export const getReservaPath = (estado: string, id: string) => {
+  const paths: Record<string, string> = {
+    reservado: `/reservas/carga-2/${id}`,
+    en_proceso: `/reservas/carga-3/${id}`,
+  };
+
+  return paths[estado] ?? `/reservas/detalle/${id}`;
+};
+
+export const normalizeSearch = (str: string): string => {
+  return str
+    .normalize("NFD") // descompone caracteres Unicode (á -> a +  ́)
+    .replace(/[\u0300-\u036f]/g, "") // elimina diacríticos
+    .toLowerCase();
+};
+
+export function parseMesAnio(param: string | string[]) {
+  const mesAnio = Array.isArray(param) ? param[0] : param;
+
+  const match = mesAnio.match(/^(\d{1,2})(\d{4})$/);
+  if (!match) throw new Error("Formato de fecha inválido");
+
+  const mes = parseInt(match[1], 10);
+  const anio = parseInt(match[2], 10);
+
+  if (mes < 1 || mes > 12) throw new Error("Mes inválido");
+
+  return { mes, anio };
+}
+
+export const obtenerNombreMes = (numeroMes: number): string => {
+  const meses = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+  return meses[numeroMes - 1] || "Mes inválido";
+};

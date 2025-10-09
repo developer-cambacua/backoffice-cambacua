@@ -8,18 +8,18 @@ export const StepForm1 = ({
   setSearchQuery,
   setSelectedGuest,
   guests,
-  isLoading,
-  isError,
+  isFetching,
   debouncedSearchQuery,
+  // isError,
 }: {
   setCurrentStep: (value: number) => void;
-  debouncedSearchQuery: string;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   setSelectedGuest: (value: SelectedGuest | null) => void;
   guests: any[];
-  isLoading: boolean;
-  isError: boolean;
+  isFetching: boolean;
+  debouncedSearchQuery: string;
+  // isError: boolean;
 }) => {
   return (
     <div className="col-span-12">
@@ -60,28 +60,30 @@ export const StepForm1 = ({
               </div>
             </div>
           </div>
-          {isLoading && (
+          {isFetching && (
             <div className="col-span-12">
               <Spinner />
             </div>
           )}
-          {debouncedSearchQuery !== "" && !isLoading && guests.length === 0 && (
-            <div className="col-span-12 my-4">
-              <div className="flex items-center justify-center gap-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor">
-                  <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                </svg>
-                <p className="font-semibold">
-                  No se encontraron huéspedes con ese criterio.
-                </p>
+          {debouncedSearchQuery !== "" &&
+            !isFetching &&
+            guests.length === 0 && (
+              <div className="col-span-12 my-4">
+                <div className="flex items-center justify-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor">
+                    <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                  </svg>
+                  <p className="font-semibold">
+                    No se encontraron huéspedes con ese criterio.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {guests.length > 0 && (
             <div className="col-span-12">

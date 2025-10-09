@@ -1,8 +1,9 @@
 import { reservasSelect } from "@/utils/supabase/querys";
-import { supabase } from "@/utils/supabase/client";
 import Reportes from "./Reportes";
+import { createServerSupabase } from "@/utils/supabase/server";
 
 export default async function Page() {
+  const supabase = await createServerSupabase();
   const { data: reservas, error: reservasError } = await supabase
     .from("reservas")
     .select(reservasSelect)

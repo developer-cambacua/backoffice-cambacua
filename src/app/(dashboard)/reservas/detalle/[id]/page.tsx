@@ -1,45 +1,43 @@
-export const dynamic = "force-dynamic";
-
-// import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import VisualizarReserva from "./VisualizarReserva";
+import { createServerSupabase } from "@/utils/supabase/server";
+import { getResponsablesLimpieza } from "@/lib/db/empleados";
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const supabase = createServerComponentClient({ cookies });
-
-  const { data: reserva, error: errorReserva } = await supabase
+  const supabase = await createServerSupabase();
+  const reservaId = Number(params.id);
+  const { data: reserva, error } = await supabase
     .from("reservas")
     .select(
-      `*, departamento:departamentos!reservas_departamento_id_fkey(*), huesped:huespedes(*), responsable_check_in:usuarios!reservas_responsable_check_in_fkey(nombre, apellido), responsable_check_out:usuarios!reservas_responsable_check_out_fkey(nombre, apellido), destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
+      `*, departamento:departamentos!reservas_departamento_id_fkey(*),
+         huesped:huespedes(*),
+         responsable_check_in:usuarios!reservas_responsable_check_in_fkey(nombre, apellido),
+         responsable_check_out:usuarios!reservas_responsable_check_out_fkey(nombre, apellido),
+         destino_viatico:departamentos!reservas_destino_viatico_fkey(nombre)`
     )
-    .eq("id", Number(params.id))
+    .eq("id", reservaId)
     .neq("estado_reserva", "cancelado")
     .single();
 
-  if (errorReserva) throw new Error(errorReserva.message);
+  if (error) throw error;
 
-  const { data: responsablesData, error: errorResponsables } = await supabase
-    .from("responsables_limpieza")
-    .select(
-      `
-          tiempo_limpieza,
-          empleado:empleado_id (
-            id,
-            nombre,
-            apellido
-          )
-        `
-    )
-    .eq("reserva_id", params.id);
+  const responsablesData = await getResponsablesLimpieza(supabase, reservaId);
 
-  if (errorResponsables) throw new Error(errorResponsables.message);
+  let fileUrl: string | null = null;
+
+  if (reserva?.documentacion_huesped) {
+    const { data, error } = await supabase.storage
+      .from("documentacion")
+      .createSignedUrl(reserva.documentacion_huesped, 300);
+
+    if (!error) fileUrl = data?.signedUrl || null;
+    else console.error("Error al generar signedUrl:", error.message);
+  }
 
   return (
     <VisualizarReserva
-      id={params.id}
       reservaFromServer={reserva}
       responsablesFromServer={responsablesData}
+      fileUrlFromServer={fileUrl}
     />
   );
 }

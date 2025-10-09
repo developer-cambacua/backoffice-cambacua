@@ -16,10 +16,11 @@ import { PopoverComponent } from "@/components/popover/Popover";
 import { NewSelect } from "@/components/select/NewSelect";
 import { tipoDeIdentificaciones } from "@/constants/tiposDeIdentificaciones";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface IStepForm2 {
   selectedGuest: SelectedGuest | null;
-  setDebouncedSearchQuery: (value: string) => void;
+  setDebouncedQuery: (value: string) => void;
   setSearchQuery: (value: string) => void;
   setCurrentStep: (value: number) => void;
   setSelectedGuest: (value: SelectedGuest | null) => void;
@@ -40,7 +41,6 @@ const countries: ICountries[] = countriesFallback.map((country, index) => {
 
 export const StepForm2 = ({
   selectedGuest,
-  setDebouncedSearchQuery,
   setSearchQuery,
   setCurrentStep,
   setSelectedGuest,
@@ -48,6 +48,7 @@ export const StepForm2 = ({
   control,
   errors,
   setValue,
+  setDebouncedQuery,
 }: IStepForm2) => {
   return (
     <div className="grid grid-cols-12 gap-6">
@@ -70,7 +71,7 @@ export const StepForm2 = ({
               color="tertiary"
               width="responsive"
               onClick={() => {
-                setDebouncedSearchQuery("");
+                setDebouncedQuery("");
                 setSearchQuery("");
                 setCurrentStep(0);
                 setSelectedGuest(null);

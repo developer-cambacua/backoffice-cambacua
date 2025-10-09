@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas,
-  zodRSchema,
+  createReservaSchema,
 } from "@/utils/objects/validationSchema";
 import { DateRange } from "react-day-picker";
 
@@ -20,8 +20,6 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 /* ----------------------------------- */
-
-import { ajustarFechaUTC, sanitizeData } from "@/utils/functions/functions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import StepperAlt from "@/components/stepper/StepperAlt";
@@ -29,27 +27,24 @@ import { StepForm1 } from "@/components/forms/carga-uno/StepForm1";
 import { StepForm2 } from "@/components/forms/carga-uno/StepForm2";
 import { StepForm3 } from "@/components/forms/carga-uno/StepForm3";
 import { StepForm4 } from "@/components/forms/carga-uno/StepForm4";
-import { toast } from "sonner";
-import { Toast } from "@/components/toast/Toast";
+import { IDepartamento } from "@/types/supabaseTypes";
+import { useAddReserva } from "@/hooks/useReservas";
+import { getDeptos } from "@/lib/db/deptos";
 
-export default function CargaUno({
-  departamentosFromServer,
-}: {
-  departamentosFromServer: any;
-}) {
+export default function CargaUno({ data }: { data: IDepartamento[] }) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [selectedDepto, setSelectedDepto] = useState<any | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [currentSchema, setCurrentSchema] = useState(z.object({}));
   const [formData, setFormData] = useState<Partial<FormData>>({});
-  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const addReserva = useAddReserva();
   const [range, setRange] = useState<DateRange>({
     from: undefined,
     to: undefined,
   });
 
-  type FormData = z.infer<typeof zodRSchema>;
+  type FormData = z.infer<typeof createReservaSchema>;
 
   type FieldName = keyof FormData;
 
@@ -118,42 +113,14 @@ export default function CargaUno({
     []
   );
 
-  const fetchDepartamentos = async () => {
-    const { data, error } = await supabase
-      .from("departamentos")
-      .select(`*, usuario:usuarios(*)`)
-      .order("id", { ascending: false });
-
-    if (error) throw new Error(error.message);
-
-    return data || [];
-  };
-
   const { data: departamentos, isLoading: loadingDepartamentos } = useQuery({
     queryKey: ["departamentos"],
-    queryFn: fetchDepartamentos,
-    initialData: departamentosFromServer,
+    queryFn: getDeptos,
+    initialData: data,
   });
 
   useEffect(() => {
-    const departamentosSubscription = supabase
-      .channel("departamentosChannel")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "departamentos" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["departamentos"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(departamentosSubscription);
-    };
-  }, [queryClient]);
-
-  useEffect(() => {
-    let newSchema: any = zodRSchema;
+    let newSchema: any = createReservaSchema;
 
     if (selectedApp === "booking") {
       newSchema = newSchema.extend({
@@ -215,7 +182,9 @@ export default function CargaUno({
       Object.fromEntries(
         currentFields.map((field) => [
           field,
-          zodRSchema.shape[field as keyof typeof zodRSchema.shape],
+          createReservaSchema.shape[
+            field as keyof typeof createReservaSchema.shape
+          ],
         ])
       )
     );
@@ -223,74 +192,7 @@ export default function CargaUno({
   }, [currentStep, steps]);
 
   const onSubmit = async (data: any) => {
-    setIsDisabled(true);
-    const offsetHoras = -3;
-    const newData: any = sanitizeData(data);
-    try {
-      const response = await supabase.from("reservas").insert([
-        {
-          departamento_id: parseInt(newData.departamento),
-          nombre_completo: newData.nombre_completo,
-          telefono_provisorio: newData.telefono,
-          numero_reserva: newData.numero_reserva,
-          app_reserva: newData.app_reserva,
-          cantidad_huespedes: newData.cantidad_huespedes,
-          fecha_ingreso: ajustarFechaUTC(
-            newData.fecha_estadia.from,
-            offsetHoras
-          ),
-          fecha_egreso: ajustarFechaUTC(newData.fecha_estadia.to, offsetHoras),
-          check_in: newData.check_in,
-          check_out: newData.check_out,
-          valor_reserva: newData.valor_reserva,
-          valor_comision_app: newData.valor_comision_app,
-          extra_check: newData.extra_check,
-          media_estadia: newData.media_estadia,
-          estado_reserva: "reservado",
-          observaciones: newData.observaciones,
-        },
-      ]);
-      const { error } = response;
-      if (error) {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="error">
-              <div>
-                <p>Ha ocurrido un error, {error.message}</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 7500 }
-        );
-        console.error(error);
-        setIsDisabled(false);
-      } else {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="success">
-              <div>
-                <p>La reserva fue cargada con éxito.</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 7500 }
-        );
-        router.push("/reservas");
-      }
-    } catch (error) {
-      setIsDisabled(false);
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="error">
-            <div>
-              <p>Ocurrió un error inesperado.</p>
-            </div>
-          </Toast>
-        ),
-        { duration: 5000 }
-      );
-      console.error(error);
-    }
+    addReserva.mutate(data);
   };
 
   if (loadingDepartamentos) {
@@ -421,8 +323,8 @@ export default function CargaUno({
                       variant="solid"
                       color="primary"
                       type="submit"
-                      disabled={isDisabled}>
-                      {isDisabled ? (
+                      disabled={addReserva.isPending || addReserva.isSuccess}>
+                      {addReserva.isPending ? (
                         <span className="flex items-center gap-x-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Cargando...

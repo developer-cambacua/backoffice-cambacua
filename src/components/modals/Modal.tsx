@@ -29,7 +29,7 @@ const ModalHeader: React.FC<ModalHeaderProps> = ({ title, subtitle }) => {
 };
 
 const ModalMain: React.FC<ModalMainProps> = ({ children }) => {
-  return <div className="mt-4 mb-4 sm:mb-6">{children}</div>;
+  return <div className="mt-4">{children}</div>;
 };
 
 const ModalFooter: React.FC<ModalFooterProps> = ({

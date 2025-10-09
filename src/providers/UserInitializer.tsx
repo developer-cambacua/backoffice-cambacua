@@ -1,16 +1,15 @@
 "use client";
-
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { useUserStore } from "@/stores/useUserStore";
 
-export function UserInitializer() {
-  const { data: session } = useSession();
-  const fetchUser = useUserStore((state) => state.fetchUser);
+export function UserInitializer({ initialUser }: { initialUser: any }) {
+  const setUser = useUserStore((state) => state.setUser);
 
   useEffect(() => {
-    fetchUser(session as any);
-  }, [session, fetchUser]);
+    if (initialUser) {
+      setUser(initialUser);
+    }
+  }, [initialUser, setUser]);
 
   return null;
 }
