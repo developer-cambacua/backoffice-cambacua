@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/backup/auths/[...nextauth]/route";
 import { UserInitializer } from "@/providers/UserInitializer";
 import ConfigLoader from "@/providers/ConfigLoader";
 import { createServerSupabase } from "@/utils/supabase/server";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function AppDataWrapper({
   children,

@@ -35,9 +35,9 @@ import { Toast } from "@/components/toast/Toast";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { fetchDepartamentos, fetchEmpleados } from "@/backup/fetchs";
 import {
   IDepartamento,
+  IEmpleadoOption,
   IEmpleados,
   IReservasDefault,
   StatusType,
@@ -72,13 +72,27 @@ export default function CargaTres({
 
   const { data: departamentos } = useQuery({
     queryKey: ["departamentos"],
-    queryFn: fetchDepartamentos,
+    queryFn: async () => {
+      const res = await fetch(`/api/departamentos`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      return await res.json();
+    },
     initialData: deptosFromServer,
   });
 
   const { data: empleados } = useQuery({
     queryKey: ["empleados"],
-    queryFn: fetchEmpleados,
+    queryFn: async () => {
+      const res = await fetch(`/api/empleados`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      return await res.json();
+    },
     initialData: empleadosFromServer,
   });
 
@@ -535,9 +549,9 @@ export default function CargaTres({
 
                                               const empleadosDisponibles =
                                                 listaEmpleados?.filter(
-                                                  (empleado) =>
+                                                  (empleado: IEmpleadoOption) =>
                                                     !empleadosSeleccionadosSinEstaFila.includes(
-                                                      empleado.value
+                                                      empleado.value!
                                                     )
                                                 );
 
@@ -998,7 +1012,9 @@ export default function CargaTres({
                                                   departamentos
                                                     ? departamentos
                                                         .filter(
-                                                          (depto) =>
+                                                          (
+                                                            depto: IDepartamento
+                                                          ) =>
                                                             depto.id !==
                                                               reserva
                                                                 .departamento
@@ -1015,10 +1031,11 @@ export default function CargaTres({
                                                             value: dep.id,
                                                           })
                                                         )
-                                                        .sort((a, b) =>
-                                                          a.label.localeCompare(
-                                                            b.label
-                                                          )
+                                                        .sort(
+                                                          (a: any, b: any) =>
+                                                            a.label.localeCompare(
+                                                              b.label
+                                                            )
                                                         )
                                                     : []
                                                 }
@@ -1076,7 +1093,7 @@ export default function CargaTres({
                                           {responsables?.map((resp, index) => {
                                             const empleado =
                                               listaEmpleados?.find(
-                                                (e) =>
+                                                (e: IEmpleadoOption) =>
                                                   e.value === resp.empleado_id
                                               );
                                             const nombreEmpleado = empleado

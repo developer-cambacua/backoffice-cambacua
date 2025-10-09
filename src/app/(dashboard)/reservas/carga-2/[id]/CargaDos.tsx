@@ -50,7 +50,6 @@ import clsx from "clsx";
 import { StepForm5 } from "@/components/forms/carga-dos/StepForm5";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
-import { fetchEmpleados } from "@/backup/fetchs";
 import { Loader2 } from "lucide-react";
 import { getReservaById } from "@/lib/db/reservas";
 import { useUpdateReserva } from "@/hooks/useReservas";
@@ -89,14 +88,28 @@ export default function CargaDos({
 
   const { data: reserva } = useQuery({
     queryKey: ["reserva", id],
-    queryFn: () => getReservaById(supabase, id),
+    queryFn: async () => {
+      const res = await fetch(`/api/reservas/${id}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      return await res.json();
+    },
     initialData: reservaFromServer,
     gcTime: 1000 * 60 * 5,
   });
 
   const { data: empleados } = useQuery({
     queryKey: ["empleados"],
-    queryFn: fetchEmpleados,
+    queryFn: async () => {
+      const res = await fetch(`/api/empleados`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      return await res.json();
+    },
     placeholderData: undefined,
     initialData: empleadosFromServer,
   });
