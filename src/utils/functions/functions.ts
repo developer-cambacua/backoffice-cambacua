@@ -188,7 +188,7 @@ export const sanitizeData = <T extends object>(data: T): T => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => [
       key,
-      value === "" ? null : value,
+      value === "" || value === undefined ? null : value,
     ])
   ) as T;
 };

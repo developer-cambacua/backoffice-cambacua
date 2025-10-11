@@ -39,6 +39,7 @@ import axios from "axios";
 import { StepForm1 } from "@/components/forms/carga-dos/StepForm1";
 import {
   IEmpleados,
+  IGuest,
   IReservasDefault,
   SelectedGuest,
   StatusType,
@@ -51,7 +52,6 @@ import { StepForm5 } from "@/components/forms/carga-dos/StepForm5";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
 import { Loader2 } from "lucide-react";
-import { getReservaById } from "@/lib/db/reservas";
 import { useUpdateReserva } from "@/hooks/useReservas";
 import { useUploadDocument } from "@/hooks/useDocumentacion";
 import { useAddHuesped } from "@/hooks/useHuesped";
@@ -472,10 +472,18 @@ export default function CargaDos({
 
   const onSubmit = async (data: any) => {
     try {
-      const offsetHoras = -3;
-
       const newData: any = sanitizeData(data);
-      const huesped = await addHuesped.mutateAsync(newData);
+      const huespedData: IGuest = {
+        nombre: newData.nombre,
+        apellido: newData.apellido,
+        numero_identificacion: newData.numero_identificacion,
+        telefono: newData.telefono,
+        nacionalidad: newData.nacionalidad,
+        email: newData.email,
+        tipo_identificacion: newData.tipo_identifacion,
+      };
+
+      const huesped = await addHuesped.mutateAsync(huespedData);
       const huespedId = huesped.id;
 
       const uploadFile = await uploadDocument.mutateAsync(
@@ -485,33 +493,32 @@ export default function CargaDos({
 
       const payload = {
         huesped_id: huespedId,
-        check_in: data.check_in,
-        check_out: data.check_out,
+        check_in: newData.check_in,
+        check_out: newData.check_out,
         extra_check:
-          data.extra_check !== "" ? stringToFloat(data.extra_check) : 0,
+          data.extra_check !== "" ? stringToFloat(newData.extra_check) : 0,
         media_estadia:
-          data.media_estadia !== "" ? stringToFloat(data.media_estadia) : 0,
+          data.media_estadia !== "" ? stringToFloat(newData.media_estadia) : 0,
         documentacion_huesped: fileName,
-        iva: stringToFloat(data.iva),
-        impuesto_municipal: stringToFloat(data.impuesto_municipal),
+        iva: stringToFloat(newData.iva),
+        impuesto_municipal: stringToFloat(newData.impuesto_municipal),
         cantidad_huesped_adicional: stringToFloat(
-          data.cantidad_huesped_adicional
+          newData.cantidad_huesped_adicional
         ),
-        valor_huesped_adicional: stringToFloat(data.valor_huesped_adicional),
-        valor_cochera: stringToFloat(data.valor_cochera),
-        fecha_de_pago: ajustarFechaUTC(data.fecha_de_pago, offsetHoras),
-        quien_cobro: data.quien_cobro,
-        responsable_check_in: data.responsable_check_in,
-        responsable_check_out: data.responsable_check_out,
-        check_in_especial: data.check_in_especial === "no" ? false : true,
-        observaciones_pagos:
-          data.observaciones_pagos !== "" ? data.observaciones_pagos : null,
-        valor_dolar_oficial: stringToFloat(data.valor_dolar_oficial),
-        valor_dolar_blue: stringToFloat(data.valor_dolar_blue),
-        medio_de_pago: data.medio_de_pago,
-        moneda_del_pago: data.moneda_del_pago,
-        posee_factura: data.posee_factura === "si" ? true : false,
-        numero_factura: data.numero_factura,
+        valor_huesped_adicional: stringToFloat(newData.valor_huesped_adicional),
+        valor_cochera: stringToFloat(newData.valor_cochera),
+        fecha_de_pago: newData.fecha_de_pago,
+        quien_cobro: newData.quien_cobro,
+        responsable_check_in: newData.responsable_check_in,
+        responsable_check_out: newData.responsable_check_out,
+        check_in_especial: newData.check_in_especial === "no" ? false : true,
+        observaciones_pagos: newData.observaciones_pagos,
+        valor_dolar_oficial: stringToFloat(newData.valor_dolar_oficial),
+        valor_dolar_blue: stringToFloat(newData.valor_dolar_blue),
+        medio_de_pago: newData.medio_de_pago,
+        moneda_del_pago: newData.moneda_del_pago,
+        posee_factura: newData.posee_factura === "si" ? true : false,
+        numero_factura: newData.numero_factura,
         total_a_cobrar: totalReserva,
         estado_reserva: "en_proceso" as StatusType,
       };

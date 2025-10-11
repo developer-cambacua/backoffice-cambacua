@@ -57,6 +57,16 @@ export interface IHuesped {
   created_at: string;
 }
 
+export interface IGuest {
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  email: string;
+  nacionalidad: string;
+  tipo_identificacion: string;
+  numero_identificacion: string;
+}
+
 export type StatusType =
   | "reservado"
   | "en_proceso"

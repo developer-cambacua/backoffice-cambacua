@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
 import { getChangedFields } from "@/utils/functions/functions";
-import { ApiError, IUsuario } from "@/types/supabaseTypes";
+import { ApiError, IGuest, IHuesped, IUsuario } from "@/types/supabaseTypes";
 
 type TUserData = {
   id?: number;
@@ -31,7 +31,7 @@ export const useHuesped = (data: IUsuario[]) => {
 export const useAddHuesped = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (newUser: TUserData) => {
+    mutationFn: async (newUser: IGuest) => {
       const res = await fetch("/api/guests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,7 +84,7 @@ export const useHuespedMutations = (setIsOpen: (value: boolean) => void) => {
 
   /* Este add se usa para modales únicamente */
   const addHuesped = useMutation({
-    mutationFn: async (newUser: TUserData) => {
+    mutationFn: async (newUser: IGuest) => {
       const res = await fetch("/api/guests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
