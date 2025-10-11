@@ -12,7 +12,7 @@ import {
   deptosSchema,
 } from "@/utils/objects/validationSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IDepartamento, IUsuario } from "@/types/supabaseTypes";
+import { IDepartamento, IPropietario } from "@/types/supabaseTypes";
 import { useEffect } from "react";
 import { Button } from "@/components/buttons/Button";
 import { DeptPayload, useDeptosMutations } from "@/hooks/useDeptos";
@@ -22,7 +22,7 @@ interface IDeptosFormProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
   selectedDepto: IDepartamento | null;
-  propietarios: IUsuario[] | null;
+  propietarios: IPropietario[] | null;
 }
 
 export default function DeptosForm({

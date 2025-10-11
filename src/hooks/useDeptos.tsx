@@ -92,7 +92,6 @@ export const useDeptosMutations = ({
       const updatedFields = getChangedFields(oldData, {
         nombre: newData.nombre.trim(),
         direccion: newData.direccion.trim(),
-        usuario_id: newData.propietario,
         propietario: newData.propietario,
         max_huespedes: newData.max_huespedes,
       });

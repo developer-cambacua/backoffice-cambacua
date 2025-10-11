@@ -5,12 +5,14 @@ import { Spinner } from "@/components/spinner/Spinner";
 import { Button } from "@/components/buttons/Button";
 import DeptosTable, { DeptosTableHandle } from "./components/DeptosTable";
 import { useDeptos } from "@/hooks/useDeptos";
-import { IDepartamento } from "@/types/supabaseTypes";
+import { IDepartamento, IPropietario } from "@/types/supabaseTypes";
 
 export default function DeptosPage({
   initialDeptos,
+  initialPropietarios,
 }: {
   initialDeptos: IDepartamento[];
+  initialPropietarios: IPropietario[];
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const deptosTableRef = useRef<DeptosTableHandle>(null);
@@ -27,7 +29,7 @@ export default function DeptosPage({
       : [];
   }, [deptosData, searchQuery]);
 
-  const data = filteredData();
+  const filteredDeptos = filteredData();
 
   if (isLoadingDeptos) {
     return <Spinner />;
@@ -74,7 +76,11 @@ export default function DeptosPage({
           </div>
         </div>
         <div className="col-span-12">
-          <DeptosTable data={data ?? []} ref={deptosTableRef} />
+          <DeptosTable
+            deptos={filteredDeptos ?? []}
+            propietarios={initialPropietarios}
+            ref={deptosTableRef}
+          />
         </div>
       </div>
     </>

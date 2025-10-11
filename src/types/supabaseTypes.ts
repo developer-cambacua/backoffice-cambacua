@@ -30,6 +30,13 @@ export interface IResponsableLimpieza {
     | null;
 }
 
+export interface IPropietario {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+}
+
 export interface IEmpleados {
   id: number;
   nombre: string;

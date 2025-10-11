@@ -28,11 +28,20 @@ const UsuariosStatusModal = ({
         }
       />
       <Modal.Main>
-        <p className="my-6 2xl:text-lg">
-          {selectedUser && selectedUser.isActive
-            ? "Este usuario perderá acceso al sistema y sus departamentos quedarán deshabilitados."
-            : "Este usuario recuperará el acceso al sistema y sus departamentos serán habilitados."}
-        </p>
+        <div className="my-6">
+          <p className="2xl:text-lg">
+            {selectedUser && selectedUser.isActive
+              ? "Al desactivar a este usuario, perderá acceso al sistema."
+              : "Al reactivar a este usuario, recuperará el acceso al sistema."}
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            *Si es propietario, sus departamentos se{" "}
+            {selectedUser && selectedUser.isActive
+              ? "deshabilitarán"
+              : "habilitarán"}{" "}
+            automáticamente.
+          </p>
+        </div>
       </Modal.Main>
       <Modal.Footer className="flex flex-col-reverse sm:items-center sm:flex-row justify-end gap-y-4 sm:gap-x-4">
         <Button
