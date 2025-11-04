@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -8,26 +9,25 @@ import {
   defaultValuesReservas,
   createReservaSchema,
 } from "@/utils/objects/validationSchema";
+import { useQuery } from "@tanstack/react-query";
 import { DateRange } from "react-day-picker";
+import { IDepartamento } from "@/types/supabaseTypes";
+import { useAddReserva } from "@/hooks/useReservas";
 
 /* ---------------- UI ---------------- */
 
 import { Spinner } from "@/components/spinner/Spinner";
 import { Button } from "@/components/buttons/Button";
-import { useRouter } from "next/navigation";
-
 import { Loader2 } from "lucide-react";
 
+
 /* ----------------------------------- */
-import { useQuery } from "@tanstack/react-query";
 
 import StepperAlt from "@/components/stepper/StepperAlt";
 import { StepForm1 } from "@/components/forms/carga-uno/StepForm1";
 import { StepForm2 } from "@/components/forms/carga-uno/StepForm2";
 import { StepForm3 } from "@/components/forms/carga-uno/StepForm3";
 import { StepForm4 } from "@/components/forms/carga-uno/StepForm4";
-import { IDepartamento } from "@/types/supabaseTypes";
-import { useAddReserva } from "@/hooks/useReservas";
 
 export default function CargaUno({ data }: { data: IDepartamento[] }) {
   const router = useRouter();

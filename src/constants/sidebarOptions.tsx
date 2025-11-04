@@ -54,7 +54,7 @@ export const sidebarData = {
       title: "Configuración",
       url: "/configuracion",
       icon: Cog,
-      disabled: true,
+      disabled: false,
     },
   ],
   // navSecondary: [

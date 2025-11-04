@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import type { Session } from "next-auth";
+import { Role } from "@/utils/enums/roles";
 
 interface UserRow {
   id: number;
@@ -8,7 +9,7 @@ interface UserRow {
   nombre: string;
   apellido: string;
   email: string;
-  rol: string;
+  rol: Role;
   isActive: boolean;
 }
 

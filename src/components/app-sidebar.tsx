@@ -18,11 +18,21 @@ import {
 import { sidebarData } from "@/constants/sidebarOptions";
 import { useUserStore } from "@/stores/useUserStore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { rolesMap } from "@/utils/objects/routes";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // top-[--header-height] !h-[calc(100svh-var(--header-height))]
+  const user = useUserStore((state) => state.user);
   const sidebarDataUser = useUserStore((state) => state.user);
   const { toggleSidebar } = useSidebar();
+
+  const filteredNavMain = user
+    ? sidebarData.navMain.filter((item) => {
+        const allowedRoles = rolesMap[item.url];
+        return allowedRoles?.includes(user.rol);
+      })
+    : [];
+
   return (
     <Sidebar className="!h-[calc(100svh)]" {...props}>
       <SidebarHeader>
@@ -60,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarData.navMain} />
+        <NavMain items={filteredNavMain} />
         {/* <NavProjects projects={sidebarData.projects} /> */}
         {/* <NavSecondary items={sidebarData.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

@@ -12,7 +12,6 @@ import { DatePickerSingle } from "@/components/datePicker/DatePickerSingle";
 import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/datePicker/DatePickerWithRange";
 import { RadioComponent } from "@/components/radio/RadioButton";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { useCancelarReserva } from "@/hooks/useCancelarReserva";
 import {
@@ -68,7 +67,11 @@ export default function ReservasPage({
     setSelectedReserva(reserva);
   }, []);
 
-  const { mutate: cancelarReserva, isPending } = useCancelarReserva(() => {
+  const {
+    mutate: cancelarReserva,
+    isPending,
+    isSuccess,
+  } = useCancelarReserva(() => {
     setIsOpen(false);
   });
 
@@ -443,7 +446,7 @@ export default function ReservasPage({
             variant="solid"
             color="error"
             onClick={() => cancelarReserva(selectedReserva.id)}
-            disabled={isPending}>
+            disabled={isPending || isSuccess}>
             {isPending ? "Cargando" : "Confirmar"}
           </Button>
         </Modal.Footer>

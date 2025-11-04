@@ -5,11 +5,11 @@ type RolesMap = {
 };
 
 export const rolesMap: RolesMap = {
-  "/home": ["admin", "superAdmin", "appOwner", "dev", "guest"],
-  "/tablero": ["admin", "superAdmin", "appOwner", "dev"],
-  "/gestionUsuarios": ["superAdmin", "appOwner", "dev"],
-  "/departamentos": ["admin", "superAdmin", "appOwner", "dev"],
-  "/reservas": ["admin", "superAdmin", "appOwner", "dev"],
-  "/profile": ["admin", "superAdmin", "propietario", "appOwner", "dev"],
   "/dev": ["dev"],
+  "/tablero": ["admin", "superAdmin", "appOwner", "dev"],
+  "/reservas": ["admin", "superAdmin", "appOwner", "dev"],
+  "/departamentos": ["admin", "superAdmin", "appOwner", "dev"],
+  "/gestionUsuarios": ["superAdmin", "appOwner", "dev"],
+  "/reportes": ["admin", "superAdmin", "appOwner", "dev"],
+  "/configuracion": ["appOwner", "dev"],
 };

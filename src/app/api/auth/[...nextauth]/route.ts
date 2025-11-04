@@ -17,8 +17,12 @@ const handler = NextAuth({
     },
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
+        /* SOLO para debug de usuarios con problemas al iniciar sesión: */
+        // user.email = "Ej: mateo@cambacua.com";
+        // token.email = user.email;
         token.rol = await getUserRoleAndCheck(user.email);
       }
+      // console.log("🔍 JWT generado:", token.email, token.rol);
       return token;
     },
     async session({ session, token }: { session: any; token: JWT }) {
