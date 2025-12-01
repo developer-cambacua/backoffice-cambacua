@@ -115,6 +115,15 @@ export const StepForm1 = ({
                 inputMode="tel"
                 error={!!errors.telefono}
                 aria-invalid={errors.telefono ? "true" : "false"}
+                onChange={(e) => {
+                  const clean = e.target.value.replace(/\s+/g, "");
+                  field.onChange(clean);
+                }}
+                onBlur={(e) => {
+                  const clean = e.target.value.replace(/\s+/g, "");
+                  field.onBlur();
+                  field.onChange(clean);
+                }}
               />
             )}
           />
