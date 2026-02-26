@@ -75,7 +75,7 @@ export default function CargaDos({
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [selectedGuest, setSelectedGuest] = useState<SelectedGuest | null>(
-    null
+    null,
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [formKey, setFormKey] = useState<boolean>(false);
@@ -149,7 +149,7 @@ export default function CargaDos({
             </div>
           </Toast>
         ),
-        { duration: 5000 }
+        { duration: 5000 },
       );
     }
   }, [errorDolar]);
@@ -189,7 +189,7 @@ export default function CargaDos({
 
   const calcularNochesReservas = calculateDaysBetween(
     reserva?.fecha_ingreso,
-    reserva?.fecha_egreso
+    reserva?.fecha_egreso,
   );
   const filteredCurrencies = useMemo(() => {
     if (!medioDePago) return [];
@@ -255,7 +255,7 @@ export default function CargaDos({
     amount,
     rates,
     selectedCollector,
-    app
+    app,
   );
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function CargaDos({
           .min(1, "Este campo es obligatorio")
           .regex(
             /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales"
+            "Solo se permiten números con hasta dos decimales",
           ),
       });
     }
@@ -289,7 +289,7 @@ export default function CargaDos({
           .string()
           .regex(
             /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales"
+            "Solo se permiten números con hasta dos decimales",
           )
           .optional(),
       });
@@ -298,7 +298,7 @@ export default function CargaDos({
           .string()
           .regex(
             /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales"
+            "Solo se permiten números con hasta dos decimales",
           )
           .optional(),
       });
@@ -397,12 +397,12 @@ export default function CargaDos({
         fields: [],
       },
     ],
-    []
+    [],
   );
 
   function mergeFormData<T>(
     prevData: Partial<T>,
-    newData: Partial<T>
+    newData: Partial<T>,
   ): Partial<T> {
     return {
       ...prevData,
@@ -447,8 +447,8 @@ export default function CargaDos({
           updateReservaSchema.shape[
             field as keyof typeof updateReservaSchema.shape
           ],
-        ])
-      )
+        ]),
+      ),
     );
     setCurrentSchema(newSchema);
   }, [currentStep, steps]);
@@ -480,14 +480,14 @@ export default function CargaDos({
         telefono: newData.telefono,
         nacionalidad: newData.nacionalidad,
         email: newData.email,
-        tipo_identificacion: newData.tipo_identifacion,
+        tipo_identificacion: newData.tipo_identificacion,
       };
 
       const huesped = await addHuesped.mutateAsync(huespedData);
       const huespedId = huesped.id;
 
       const uploadFile = await uploadDocument.mutateAsync(
-        data.documentacion_huespedes
+        data.documentacion_huespedes,
       );
       const fileName = renameFile(uploadFile);
 
@@ -503,7 +503,7 @@ export default function CargaDos({
         iva: stringToFloat(newData.iva),
         impuesto_municipal: stringToFloat(newData.impuesto_municipal),
         cantidad_huesped_adicional: stringToFloat(
-          newData.cantidad_huesped_adicional
+          newData.cantidad_huesped_adicional,
         ),
         valor_huesped_adicional: stringToFloat(newData.valor_huesped_adicional),
         valor_cochera: stringToFloat(newData.valor_cochera),
@@ -541,7 +541,7 @@ export default function CargaDos({
                 </div>
               </Toast>
             ),
-            { duration: 5000 }
+            { duration: 5000 },
           );
         },
       });
@@ -554,7 +554,7 @@ export default function CargaDos({
             </div>
           </Toast>
         ),
-        { duration: 5000 }
+        { duration: 5000 },
       );
     }
   };
@@ -692,13 +692,13 @@ export default function CargaDos({
                             Fecha ingreso:
                           </p>
                           <p className="text-sm font-bold">{`${formatDate(
-                            reserva.fecha_ingreso
+                            reserva.fecha_ingreso,
                           )}`}</p>
                         </li>
                         <li className="flex flex-wrap items-center justify-between gap-2">
                           <p className="text-sm text-gray-500">Fecha egreso:</p>
                           <p className="text-sm font-bold">{`${formatDate(
-                            reserva.fecha_egreso
+                            reserva.fecha_egreso,
                           )}`}</p>
                         </li>
                         <li className="flex flex-wrap items-center justify-between gap-2">
@@ -706,7 +706,7 @@ export default function CargaDos({
                             Plataforma de la reserva:
                           </p>
                           <p className="text-sm font-bold">{`${getAppReserva(
-                            reserva.app_reserva
+                            reserva.app_reserva,
                           )}`}</p>
                         </li>
                         <li className="flex flex-wrap items-center justify-between gap-2">
@@ -819,7 +819,7 @@ export default function CargaDos({
                       <div
                         className={clsx(
                           "gap-x-6 flex items-center justify-end",
-                          currentStep === 4 && "max-w-[512px] mx-auto"
+                          currentStep === 4 && "max-w-[512px] mx-auto",
                         )}>
                         {currentStep + 1 === 1 && (
                           <Button
