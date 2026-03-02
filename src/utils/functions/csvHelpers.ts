@@ -68,6 +68,9 @@ export const formatearResponsablesParaCSV = (reservas: any[]) => {
       nombre_completo: `${reserva.huesped?.nombre ?? ""} ${
         reserva.huesped?.apellido ?? ""
       }`,
+      quien_cobro: `${reserva.quien_cobro?.nombre ?? ""} ${
+        reserva.quien_cobro?.apellido ?? ""
+      }`,
       responsable_check_in: `${reserva.responsable_check_in?.nombre ?? ""} ${
         reserva.responsable_check_in?.apellido ?? ""
       }`,

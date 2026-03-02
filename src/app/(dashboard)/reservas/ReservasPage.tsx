@@ -34,8 +34,10 @@ export default function ReservasPage({
   initialReservas: IReservasDefault[];
   initialDeptos: IDepartamento[];
 }) {
+
+  
   const { data: reservas, isLoading: isLoadingReservas } =
-    useReservas(initialReservas);
+  useReservas(initialReservas);
   const { data: departamentos, isLoading: isLoadingDeptos } =
     useDeptos(initialDeptos);
   const userData = useUserStore((state) => state.user);
@@ -183,6 +185,8 @@ export default function ReservasPage({
   if (isLoadingReservas || isLoadingDeptos) {
     return <Spinner />;
   }
+
+  console.log(filteredData);
 
   return (
     <>
