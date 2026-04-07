@@ -34,10 +34,8 @@ export default function ReservasPage({
   initialReservas: IReservasDefault[];
   initialDeptos: IDepartamento[];
 }) {
-
-  
   const { data: reservas, isLoading: isLoadingReservas } =
-  useReservas(initialReservas);
+    useReservas(initialReservas);
   const { data: departamentos, isLoading: isLoadingDeptos } =
     useDeptos(initialDeptos);
   const userData = useUserStore((state) => state.user);
@@ -49,7 +47,7 @@ export default function ReservasPage({
   >(null);
   const [selectedEstado, setSelectedEstado] = useState<string | null>(null);
   const [selectedAppReserva, setSelectedAppReserva] = useState<string | null>(
-    null
+    null,
   );
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [range, setRange] = useState<DateRange | undefined>(undefined);
@@ -81,7 +79,7 @@ export default function ReservasPage({
 
   const columns = useMemo(
     () => getColumns(handleCancelarReserva, userData),
-    [handleCancelarReserva, userData]
+    [handleCancelarReserva, userData],
   );
 
   const filteredData = reservas
@@ -149,8 +147,8 @@ export default function ReservasPage({
 
     setTempDataFilters((prev: any) => ({
       ...prev,
-      date: newMode === "single" ? prev.date ?? undefined : undefined,
-      range: newMode === "range" ? prev.range ?? undefined : undefined,
+      date: newMode === "single" ? (prev.date ?? undefined) : undefined,
+      range: newMode === "range" ? (prev.range ?? undefined) : undefined,
     }));
   };
 
@@ -185,8 +183,6 @@ export default function ReservasPage({
   if (isLoadingReservas || isLoadingDeptos) {
     return <Spinner />;
   }
-
-  console.log(filteredData);
 
   return (
     <>
@@ -330,7 +326,7 @@ export default function ReservasPage({
                                   key: `${dep.nombre}-${index}`,
                                   label: dep.nombre,
                                   value: dep.id,
-                                })
+                                }),
                               ) ?? []),
                             ]}
                             value={tempDataFilters.depto ?? ""}
@@ -423,7 +419,7 @@ export default function ReservasPage({
               }
               getCellClassName={(_, columnId) =>
                 clsx(
-                  columnId === "acciones" && "sticky right-0 z-10 bg-inherit"
+                  columnId === "acciones" && "sticky right-0 z-10 bg-inherit",
                 )
               }
             />
