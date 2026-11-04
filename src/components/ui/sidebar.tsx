@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeft } from "lucide-react";
+import { SidebarClose, SidebarOpen } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -263,12 +263,21 @@ const Sidebar = React.forwardRef<
 );
 Sidebar.displayName = "Sidebar";
 
-/* Botón para abrir el sidebar */
+/* Ícono según el estado: abierto → SidebarClose, cerrado → SidebarOpen (desktop y mobile) */
+function SidebarToggleIcon({ className }: { className?: string }) {
+  const { isMobile, open, openMobile } = useSidebar();
+  const isOpen = isMobile ? openMobile : open;
+  const Icon = isOpen ? SidebarClose : SidebarOpen;
+  return <Icon className={cn("!size-6", className)} />;
+}
+
+/* Botón para abrir/cerrar el sidebar */
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, isMobile, open, openMobile } = useSidebar();
+  const isOpen = isMobile ? openMobile : open;
 
   return (
     <Button
@@ -282,22 +291,10 @@ const SidebarTrigger = React.forwardRef<
         toggleSidebar();
       }}
       {...props}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="!size-6">
-        <path d="M4 12h16" />
-        <path d="M4 18h16" />
-        <path d="M4 6h16" />
-      </svg>
-      <span className="sr-only">Toggle Sidebar</span>
+      <SidebarToggleIcon />
+      <span className="sr-only">
+        {isOpen ? "Cerrar menú lateral" : "Abrir menú lateral"}
+      </span>
     </Button>
   );
 });
@@ -778,6 +775,7 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
+  SidebarToggleIcon,
   SidebarTrigger,
   useSidebar,
 };

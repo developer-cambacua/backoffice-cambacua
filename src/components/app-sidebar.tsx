@@ -12,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarToggleIcon,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -45,20 +46,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               onClick={toggleSidebar}>
               <div>
                 <div className="flex size-8 items-center justify-center rounded-full bg-transparent hover:bg-terciary-100 transition-all hover:text-secondary-900">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round">
-                    <path d="M4 12h16" />
-                    <path d="M4 18h16" />
-                    <path d="M4 6h16" />
-                  </svg>
+                  <SidebarToggleIcon />
                 </div>
                 {/* <div className="grid flex-1 text-left text-sm">
                   <span className="truncate font-semibold">Acme Inc</span>
