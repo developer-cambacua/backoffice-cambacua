@@ -1,5 +1,10 @@
 import { z } from "zod";
 import { esHoraValida, normalizarHoraInput } from "../functions/functions";
+import {
+  NOTIFICATION_MESSAGE_MAX,
+  NOTIFICATION_TYPES,
+  type NotificationType,
+} from "@/constants/notificaciones";
 
 /**
  * Mensajes por defecto de zod en español. Sólo aplica cuando el schema no define
@@ -518,6 +523,31 @@ export const deptosSchema = z.object({
     .number()
     .min(1, "El mínimo es 1 huésped.")
     .max(10, "El máximo es 10 huéspedes."),
+});
+
+/* ------------- Validación y default values para notificaciones ------------- */
+
+export const defaultValueNotificacion = {
+  message: "",
+  type: "info" as NotificationType,
+  visible: true,
+  expires_at: "",
+};
+
+export const notificacionSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, "Este campo es obligatorio")
+    .max(NOTIFICATION_MESSAGE_MAX, "El mensaje es demasiado largo"),
+  type: z.enum(NOTIFICATION_TYPES, {
+    errorMap: () => ({ message: "Seleccioná un tipo" }),
+  }),
+  visible: z.boolean().default(true),
+  expires_at: z
+    .string()
+    .min(1, "Seleccioná la fecha de vencimiento")
+    .refine((v) => !isNaN(Date.parse(v)), "La fecha no es válida"),
 });
 
 /* ------------- Validación y default values para Editar reserva ------------- */

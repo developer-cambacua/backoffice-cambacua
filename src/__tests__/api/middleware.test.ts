@@ -88,6 +88,17 @@ describe("middleware: con sesión", () => {
     expect(pasa(await visitar("/api/notificaciones"))).toBe(true);
   });
 
+  it("la administración de notificaciones es sólo appOwner/dev, el GET público sigue abierto", async () => {
+    sesion({ rol: "admin", isActive: true });
+    expect((await visitar("/api/notificaciones/gestion")).status).toBe(403);
+    expect((await visitar("/api/notificaciones/gestion/5")).status).toBe(403);
+    expect(pasa(await visitar("/api/notificaciones"))).toBe(true);
+
+    sesion({ rol: "appOwner", isActive: true });
+    expect(pasa(await visitar("/api/notificaciones/gestion"))).toBe(true);
+    expect(pasa(await visitar("/api/notificaciones/gestion/5"))).toBe(true);
+  });
+
   it("el rol se toma de la base, no del token (cambios de rol sin re-login)", async () => {
     sesion({ rol: "limpieza", isActive: true });
     estado.token = { email: "ana@cambacua.com", rol: "appOwner" };

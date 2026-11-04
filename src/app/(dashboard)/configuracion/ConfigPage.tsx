@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { TabsSection } from "@/components/tabs/Tabs";
 import Formularios from "./Formularios";
 import LiberadorEspacio from "./LiberadorEspacio";
+import Notificaciones from "./Notificaciones";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@/components/spinner/Spinner";
 import { Toast } from "@/components/toast/Toast";
@@ -114,6 +115,11 @@ export default function ConfigPage({
                 value: "liberador",
                 label: "Liberador de espacio",
                 content: <LiberadorEspacio />,
+              },
+              {
+                value: "notificaciones",
+                label: "Notificaciones",
+                content: <Notificaciones />,
               },
             ]}
           />

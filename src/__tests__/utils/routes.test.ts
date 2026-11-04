@@ -39,6 +39,8 @@ const matriz: [string, Role[]][] = [
   ["/api/configuraciones", ["appOwner", "dev"]],
   ["/api/documentacion/antigua", ["appOwner", "dev"]],
   ["/api/notificaciones", ROLES],
+  ["/api/notificaciones/gestion", ["appOwner", "dev"]],
+  ["/api/notificaciones/gestion/5", ["appOwner", "dev"]],
 ];
 
 describe("Permisos por rol (middleware)", () => {

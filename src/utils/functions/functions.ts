@@ -56,6 +56,21 @@ export const ajustarFechaUTC = (
   return utcFecha.toISOString();
 };
 
+/**
+ * Vencimiento de una notificación: el día elegido a las 23:59:59.999 hora Argentina (UTC-3),
+ * en ISO UTC. Usa año/mes/día locales de `fecha` (lo que el usuario ve en el calendario).
+ */
+export const finDelDiaArgentina = (fecha: Date): string =>
+  new Date(
+    Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 23 + 3, 59, 59, 999)
+  ).toISOString();
+
+/** Inversa de `finDelDiaArgentina`: el día (hora Argentina) de un ISO UTC, como Date local a las 00:00. */
+export const diaArgentinaDesdeISO = (iso: string): Date => {
+  const ar = new Date(new Date(iso).getTime() - 3 * 60 * 60 * 1000);
+  return new Date(ar.getUTCFullYear(), ar.getUTCMonth(), ar.getUTCDate());
+};
+
 export const formatUserRole = (role: string) => {
   const roleMapping: { [key: string]: string } = {
     superAdmin: "Super admin",

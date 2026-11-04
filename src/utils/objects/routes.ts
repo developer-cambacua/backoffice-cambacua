@@ -20,6 +20,7 @@ export const apiRolesMap: RolesMap = {
   "/api/users": ["superAdmin", "appOwner", "dev"],
   "/api/configuraciones": ["appOwner", "dev"],
   "/api/notificaciones": [],
+  "/api/notificaciones/gestion": ["appOwner", "dev"],
   "/api/documentacion/antigua": ["appOwner", "dev"],
 };
 
