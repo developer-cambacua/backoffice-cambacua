@@ -1,5 +1,6 @@
 import { calculateTimeDifference } from "@/utils/functions/functions";
 import { supabase } from "@/utils/supabase/client";
+import { reservasSelect } from "@/utils/supabase/querys";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -8,9 +9,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const id = Number(params.id);
+  if (isNaN(id))
+    return NextResponse.json({ message: "ID inválido" }, { status: 400 });
+
+  /* Mismo select que usan las páginas server (con joins), así el refetch no pierde datos */
   const { data, error } = await supabase
     .from("reservas")
-    .select("*")
+    .select(reservasSelect)
     .eq("id", id)
     .single();
 

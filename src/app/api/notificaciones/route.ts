@@ -2,6 +2,9 @@ import { supabase } from "@/utils/supabase/client";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+/* Sin esto Next prerenderiza el GET en el build y devuelve siempre las mismas notificaciones */
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const { data, error } = await supabase
     .from("notifications")

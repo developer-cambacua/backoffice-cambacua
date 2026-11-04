@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { CardData } from "@/components/cards/CardData";
-import { supabase } from "@/utils/supabase/client";
 import {
   calculateTimeDifference,
   formatCurrencyToArs,
@@ -43,7 +42,6 @@ import {
   StatusType,
 } from "@/types/supabaseTypes";
 import { useUpdateReserva } from "@/hooks/useReservas";
-import { getReservaById } from "@/lib/db/reservas";
 
 export default function CargaTres({
   reservaFromServer,
@@ -64,8 +62,15 @@ export default function CargaTres({
   /* -------------------------------------- Supabase -------------------------------------- */
 
   const { data: reserva } = useQuery({
-    queryKey: ["reserva"],
-    queryFn: () => getReservaById(supabase, id),
+    queryKey: ["reserva", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/reservas/${id}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error desconocido");
+      }
+      return await res.json();
+    },
     initialData: reservaFromServer,
     gcTime: 1000 * 60 * 5,
   });

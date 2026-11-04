@@ -9,6 +9,7 @@ import { Toast } from "@/components/toast/Toast";
 import { toast } from "sonner";
 import { useConfiguraciones } from "@/hooks/useConfigs";
 import { Configuracion } from "@/types/supabaseTypes";
+import { useConfigStore } from "@/stores/configStore";
 
 export default function ConfigPage({
   initialConfigData,
@@ -36,7 +37,11 @@ export default function ConfigPage({
         throw new Error(error || "Error al actualizar");
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      /* Mantener sincronizado el store global (lo usan los formularios, ej. allow_past_dates) */
+      useConfigStore.setState((state) => ({
+        config: { ...state.config, ...variables },
+      }));
       toast.custom(
         (id) => (
           <Toast id={id} variant="success">
