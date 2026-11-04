@@ -59,11 +59,15 @@ export default function Notificaciones() {
   const [aEliminar, setAEliminar] = useState<NotificacionGestion | null>(null);
   const [aCambiarVisibilidad, setACambiarVisibilidad] =
     useState<NotificacionGestion | null>(null);
+  /* "Abierto" va aparte de "cuál": si se borra la notificación al cerrar, el texto
+     del modal cambia durante la animación de salida. */
+  const [eliminarOpen, setEliminarOpen] = useState(false);
+  const [visibilidadOpen, setVisibilidadOpen] = useState(false);
 
   const { crear, actualizar, eliminar } = useNotificacionMutations(() => {
     setFormOpen(false);
-    setAEliminar(null);
-    setACambiarVisibilidad(null);
+    setEliminarOpen(false);
+    setVisibilidadOpen(false);
   });
 
   const {
@@ -109,9 +113,15 @@ export default function Notificaciones() {
   const columns = useMemo(
     () =>
       getColumns({
-        onToggleVisible: setACambiarVisibilidad,
+        onToggleVisible: (n) => {
+          setACambiarVisibilidad(n);
+          setVisibilidadOpen(true);
+        },
         onEdit: abrirEdicion,
-        onDelete: setAEliminar,
+        onDelete: (n) => {
+          setAEliminar(n);
+          setEliminarOpen(true);
+        },
         disabled: isPending,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,8 +305,8 @@ export default function Notificaciones() {
 
       {/* Confirmación de cambio de visibilidad */}
       <Modal
-        isOpen={!!aCambiarVisibilidad}
-        onClose={() => !actualizar.isPending && setACambiarVisibilidad(null)}
+        isOpen={visibilidadOpen}
+        onClose={() => !actualizar.isPending && setVisibilidadOpen(false)}
         size="max-w-xl"
       >
         <Modal.Header title="Cambiar visibilidad" />
@@ -317,7 +327,7 @@ export default function Notificaciones() {
             color="tertiary"
             variant="ghost"
             disabled={actualizar.isPending}
-            onClick={() => setACambiarVisibilidad(null)}
+            onClick={() => setVisibilidadOpen(false)}
           >
             Cancelar
           </Button>
@@ -344,8 +354,8 @@ export default function Notificaciones() {
 
       {/* Confirmación de borrado */}
       <Modal
-        isOpen={!!aEliminar}
-        onClose={() => !eliminar.isPending && setAEliminar(null)}
+        isOpen={eliminarOpen}
+        onClose={() => !eliminar.isPending && setEliminarOpen(false)}
         size="max-w-xl"
       >
         <Modal.Header title="Eliminar notificación" />
@@ -368,7 +378,7 @@ export default function Notificaciones() {
             color="tertiary"
             variant="ghost"
             disabled={eliminar.isPending}
-            onClick={() => setAEliminar(null)}
+            onClick={() => setEliminarOpen(false)}
           >
             Cancelar
           </Button>
