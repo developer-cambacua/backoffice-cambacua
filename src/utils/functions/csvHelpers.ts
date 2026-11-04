@@ -9,6 +9,8 @@ export const headers: Header[] = [
   { label: "Nombre completo huésped ", key: "nombre_completo" },
   { label: "Nombre huésped ", key: "huesped.nombre" },
   { label: "Apellido huésped ", key: "huesped.apellido" },
+  { label: "Tipo de identificación", key: "huesped.tipo_identificacion" },
+  { label: "Número de identificación", key: "huesped.numero_identificacion" },
   { label: "Teléfono huésped", key: "huesped.telefono" },
   { label: "Fecha de carga", key: "created_at" },
   { label: "Cantidad de Huéspedes", key: "cantidad_huespedes" },
