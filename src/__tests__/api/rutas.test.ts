@@ -114,6 +114,27 @@ describe("/api/reservas/[id]", () => {
     expect(mock.llamadas.map((c) => `${c.tabla}.${c.accion}`)).toEqual(["reservas.update"]);
   });
 
+  it.each([[0], ["0"], [null], ["abc"], [-5]])(
+    "PATCH con cotización del dólar inválida (%j) → 400 sin tocar la base",
+    async (valor) => {
+      const res = await actualizarReserva(
+        req("/api/reservas/7", { method: "PATCH", body: { estado_reserva: "en_proceso", valor_dolar_oficial: valor, valor_dolar_blue: 1310 } }),
+        params("7")
+      );
+      expect(res.status).toBe(400);
+      expect(mock.llamadas).toHaveLength(0);
+    }
+  );
+
+  it("PATCH de carga 2 con cotizaciones válidas actualiza la reserva", async () => {
+    const res = await actualizarReserva(
+      req("/api/reservas/7", { method: "PATCH", body: { estado_reserva: "en_proceso", valor_dolar_oficial: 1280, valor_dolar_blue: 1310.5 } }),
+      params("7")
+    );
+    expect(res.status).toBe(200);
+    expect(mock.llamadas.map((c) => `${c.tabla}.${c.accion}`)).toEqual(["reservas.update"]);
+  });
+
   it("si falla el borrado de responsables no inserta ni actualiza", async () => {
     usar(crearSupabaseMock({ "responsables_limpieza.delete": { error: { message: "rls" } } }));
     const body = { responsables_limpieza: [{ empleado_id: 3, hora_ingreso_limpieza: "10:00", hora_egreso_limpieza: "11:00" }] };

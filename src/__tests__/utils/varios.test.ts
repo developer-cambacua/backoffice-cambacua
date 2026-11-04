@@ -2,10 +2,13 @@ import { describe, it, expect } from "vitest";
 import {
   formatterMap,
   getReservaPath,
+  normalizarDecimal,
   parseMesAnio,
   sanitizeData,
+  stringToFloat,
   transformData,
 } from "@/utils/functions/functions";
+import { pickStepSchema, updateReservaSchema } from "@/utils/objects/validationSchema";
 import {
   formatearResponsablesParaCSV,
   headers,
@@ -114,5 +117,23 @@ describe("CSV de 'Descargar reporte'", () => {
     const [f] = transformData(formatearResponsablesParaCSV([{ nombre_completo: "Sin huésped" }]), headers);
     expect(f["huesped.numero_identificacion"]).toBe("-");
     expect(f["detalle_limpieza"]).toBe("-");
+  });
+});
+
+describe("normalizarDecimal (cotización del dólar escrita con coma)", () => {
+  it.each([
+    ["1250,50", "1250.50"],
+    ["1250.50", "1250.50"],
+    ["1310", "1310"],
+    [",5", ".5"],
+  ])("%s → %s", (entrada, esperado) => {
+    expect(normalizarDecimal(entrada)).toBe(esperado);
+  });
+
+  it("el valor convertido se valida y se guarda con sus decimales", () => {
+    const s = pickStepSchema(updateReservaSchema, ["valor_dolar_oficial"]);
+    const valor = normalizarDecimal("1250,50");
+    expect(s.safeParse({ valor_dolar_oficial: valor }).success).toBe(true);
+    expect(stringToFloat(valor)).toBe(1250.5); // sin convertir, parseFloat("1250,50") daría 1250
   });
 });

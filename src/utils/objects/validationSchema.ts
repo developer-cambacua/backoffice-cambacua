@@ -244,6 +244,19 @@ export const createReservaSchemaBack = z.object({
 
 /* Etapa 2 */
 
+/* Cotización del dólar: con 0 o un texto no numérico el total a cobrar daba 0 o NaN */
+const cotizacionDolar = z
+  .string({
+    required_error: "Este campo es obligatorio",
+    invalid_type_error: "Este campo es obligatorio",
+  })
+  .trim()
+  .min(1, "Este campo es obligatorio")
+  .regex(/^\d{1,9}(\.\d{1,2})?$/, "Ingresá un número válido (ej. 1250.50)")
+  .refine((valor) => parseFloat(valor) > 0, {
+    message: "La cotización del dólar debe ser mayor a 0",
+  });
+
 export const defaultValuesReservas2 = {
   tipo_identificacion: "DNI" as const,
   numero_identificacion: "",
@@ -361,18 +374,8 @@ export const updateReservaSchema = z.object({
   valor_huesped_adicional: z.string().optional(),
   solicitud_cochera: z.enum(["si", "no"]).default("no"),
   valor_cochera: z.string().optional(),
-  valor_dolar_oficial: z
-    .string({
-      required_error: "Este campo es obligatorio",
-      invalid_type_error: "Este campo es obligatorio",
-    })
-    .min(1, "Este campo es obligatorio"),
-  valor_dolar_blue: z
-    .string({
-      required_error: "Este campo es obligatorio",
-      invalid_type_error: "Este campo es obligatorio",
-    })
-    .min(1, "Este campo es obligatorio"),
+  valor_dolar_oficial: cotizacionDolar,
+  valor_dolar_blue: cotizacionDolar,
   fecha_de_pago: z.date({ required_error: "Este campo es obligatorio" }),
   medio_de_pago: z
     .string({

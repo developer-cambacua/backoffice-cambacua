@@ -42,6 +42,19 @@ export async function PATCH(
   const body = await req.json();
   const { responsables_limpieza, ...payload } = body;
 
+  /* Con cotización 0 o no numérica el total a cobrar queda en 0 / NaN */
+  for (const campo of ["valor_dolar_oficial", "valor_dolar_blue"] as const) {
+    if (campo in payload) {
+      const valor = Number(payload[campo]);
+      if (!Number.isFinite(valor) || valor <= 0) {
+        return NextResponse.json(
+          { message: "La cotización del dólar debe ser mayor a 0." },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   if (
     Array.isArray(responsables_limpieza) &&
     responsables_limpieza.length > 0

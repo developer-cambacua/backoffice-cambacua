@@ -478,3 +478,6 @@ export const obtenerNombreMes = (numeroMes: number): string => {
   ];
   return meses[numeroMes - 1] || "Mes inválido";
 };
+
+/** Convierte comas en punto decimal mientras se escribe (ej. "1250,50" → "1250.50"). */
+export const normalizarDecimal = (valor: string): string => valor.replace(/,/g, ".");

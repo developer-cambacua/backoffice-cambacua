@@ -15,6 +15,7 @@ import { TMediosPago } from "@/types/select";
 import { payments } from "@/utils/objects/paymentMethods";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { normalizarDecimal } from "@/utils/functions/functions";
 import { NewSelect } from "@/components/select/NewSelect";
 import { DatePickerSingle } from "@/components/datePicker/DatePickerSingle";
 import TextArea from "@/components/inputs/Textarea";
@@ -126,6 +127,10 @@ export const StepForm4 = ({
               return (
                 <Input
                   {...field}
+                  onChange={(e) =>
+                    field.onChange(normalizarDecimal(e.target.value))
+                  }
+                  inputMode="decimal"
                   placeholder="Ingresá el valor"
                   value={field.value}
                   error={!!errors.valor_dolar_oficial}
@@ -225,6 +230,10 @@ export const StepForm4 = ({
               return (
                 <Input
                   {...field}
+                  onChange={(e) =>
+                    field.onChange(normalizarDecimal(e.target.value))
+                  }
+                  inputMode="decimal"
                   placeholder="Ingresá el valor"
                   value={field.value}
                   error={!!errors.valor_dolar_blue}

@@ -136,6 +136,30 @@ describe("Carga 2", () => {
     expect(errores(otra, { ...paso3Base, iva: "abc" })).toEqual({});
   });
 
+  describe("paso 4: cotización del dólar", () => {
+    const s = pickStepSchema(updateReservaSchema, ["valor_dolar_oficial", "valor_dolar_blue"]);
+
+    it.each([["0"], ["0.00"], ["000"]])("rechaza %s (no puede ser 0)", (valor) => {
+      const e = errores(s, { valor_dolar_oficial: valor, valor_dolar_blue: valor });
+      expect(e.valor_dolar_oficial).toBe("La cotización del dólar debe ser mayor a 0");
+      expect(e.valor_dolar_blue).toBe("La cotización del dólar debe ser mayor a 0");
+    });
+
+    it.each([["abc"], ["-1250"], ["1250,50"], ["12.345"]])("rechaza %s (no es un número válido)", (valor) => {
+      expect(errores(s, { valor_dolar_oficial: valor, valor_dolar_blue: "1300" }).valor_dolar_oficial).toBe(
+        "Ingresá un número válido (ej. 1250.50)"
+      );
+    });
+
+    it("vacío sigue siendo obligatorio", () => {
+      expect(errores(s, { valor_dolar_oficial: "", valor_dolar_blue: "1300" }).valor_dolar_oficial).toBe("Este campo es obligatorio");
+    });
+
+    it.each([["1250"], ["1250.5"], ["1250.50"], [" 1310 "], ["0.5"]])("acepta %s", (valor) => {
+      expect(errores(s, { valor_dolar_oficial: valor, valor_dolar_blue: valor })).toEqual({});
+    });
+  });
+
   describe("paso 2: datos del huésped", () => {
     const s = pickStepSchema(updateReservaSchema, CARGA2_PASO2);
     const pdf = new File(["%PDF"], "dni.pdf", { type: "application/pdf" });
