@@ -545,3 +545,95 @@ export const zodEditarReserva = z.object({
       message: "El número de factura es incorrecto",
     }),
 });
+
+/* ------------- Schemas completos con reglas condicionales (carga 1, 2 y 3) -------------
+   Los usan los wizards (junto con pickStepSchema) y los tests: una sola definición. */
+
+const regexMonto = /^\d{1,9}(\.\d{0,2})?$/;
+
+export function schemaCargaUno({ appReserva }: { appReserva?: string }) {
+  let schema: z.AnyZodObject = createReservaSchema;
+  if (appReserva === "booking") {
+    schema = schema.extend({
+      valor_comision_app: z
+        .string()
+        .min(1, "Ingresá un valor de comisión")
+        .regex(
+          /^\d{0,9}(\.\d{0,2})?$/,
+          "Solo se permiten números con hasta dos decimales"
+        ),
+    });
+  }
+  return schema;
+}
+
+export function schemaCargaDos({
+  adicionalHuesped,
+  solicitudCochera,
+  appReserva,
+}: {
+  adicionalHuesped?: string;
+  solicitudCochera?: string;
+  appReserva?: string;
+}) {
+  let schema: z.AnyZodObject = updateReservaSchema;
+  if (adicionalHuesped === "si") {
+    schema = schema.extend({
+      cantidad_huesped_adicional: z
+        .number()
+        .min(1, "El mínimo es 1 huésped.")
+        .max(10, "El máximo es 10 huéspedes.")
+        .default(1),
+      valor_huesped_adicional: z.string().min(1, "Este campo es obligatorio"),
+    });
+  }
+  if (solicitudCochera === "si") {
+    schema = schema.extend({
+      valor_cochera: z
+        .string()
+        .min(1, "Este campo es obligatorio")
+        .regex(regexMonto, "Solo se permiten números con hasta dos decimales"),
+    });
+  }
+  if (appReserva === "booking") {
+    schema = schema.extend({
+      impuesto_municipal: z
+        .string()
+        .regex(regexMonto, "Solo se permiten números con hasta dos decimales")
+        .optional(),
+      iva: z
+        .string()
+        .regex(regexMonto, "Solo se permiten números con hasta dos decimales")
+        .optional(),
+    });
+  }
+  return schema;
+}
+
+export function schemaCargaTres({
+  viatico,
+  fichaLavadero,
+}: {
+  viatico?: string;
+  fichaLavadero?: string;
+}) {
+  let schema: z.AnyZodObject = completeReservaSchema;
+  if (viatico === "si") {
+    schema = schema.extend({
+      valor_viatico: z
+        .string()
+        .min(1, "Este campo es obligatorio")
+        .regex(/^\d{1,9}$/, "Solo se permiten números"),
+      a_donde_viatico: z.number().min(1, "Seleccioná un valor").default(0),
+    });
+  }
+  if (fichaLavadero === "si") {
+    schema = schema.extend({
+      cantidad_fichas_lavadero: z
+        .number()
+        .min(1, "El mínimo es 1 ficha.")
+        .max(10, "El máximo es 10 fichas."),
+    });
+  }
+  return schema;
+}

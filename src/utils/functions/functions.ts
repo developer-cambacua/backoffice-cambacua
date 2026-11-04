@@ -368,8 +368,10 @@ export const parseTiempoLimpieza = (tiempo: string): number => {
 };
 
 export const decimalAHorasMinutos = (horasDecimales: number) => {
-  const horas = Math.floor(horasDecimales);
-  const minutos = Math.round((horasDecimales - horas) * 60);
+  /* Se redondea a minutos totales ANTES de separar: si no, 1.9999999 h daba "1:60" */
+  const minutosTotales = Math.round(horasDecimales * 60);
+  const horas = Math.floor(minutosTotales / 60);
+  const minutos = minutosTotales % 60;
   return `${horas}:${minutos.toString().padStart(2, "0")}`;
 };
 

@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { parseTiempoLimpieza } from "@/utils/functions/functions"
 
 describe("Parsear bien la hora de limpieza", () => {

@@ -23,6 +23,7 @@ import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
 import {
   defaultValuesReservas3,
   completeReservaSchema,
+  schemaCargaTres,
   pickStepSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
@@ -242,30 +243,11 @@ export default function CargaTres({
     }
   };
 
-  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
+  /* Schema del paso actual con las reglas condicionales (definidas en validationSchema.ts) */
   useEffect(() => {
-    let fullSchema: z.AnyZodObject = completeReservaSchema;
-
-    if (viatico === "si") {
-      fullSchema = fullSchema.extend({
-        valor_viatico: z
-          .string()
-          .min(1, "Este campo es obligatorio")
-          .regex(/^\d{1,9}$/, "Solo se permiten números"),
-        a_donde_viatico: z.number().min(1, "Seleccioná un valor").default(0),
-      });
-    }
-
-    if (fichaLavadero === "si") {
-      fullSchema = fullSchema.extend({
-        cantidad_fichas_lavadero: z
-          .number()
-          .min(1, "El mínimo es 1 ficha.")
-          .max(10, "El máximo es 10 fichas."),
-      });
-    }
-
-    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+    setCurrentSchema(
+      pickStepSchema(schemaCargaTres({ viatico, fichaLavadero }), steps[currentStep].fields),
+    );
   }, [currentStep, steps, viatico, fichaLavadero]);
 
   useEffect(() => {

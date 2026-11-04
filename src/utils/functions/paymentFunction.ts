@@ -1,3 +1,5 @@
+import { calcularTotalReserva, calculateDaysBetween } from "./functions";
+
 export function formatearADolar(value: number) {
   return value.toLocaleString("en-US", {
     style: "currency",
@@ -16,7 +18,7 @@ export type Currency = "ARS" | "USD" | "EUR";
 export type Collector = "TAMARA" | "MILAGROS" | "PROPIETARIO";
 export type TWeb = "airbnb" | "booking" | "web";
 
-interface ExchangeRates {
+export interface ExchangeRates {
   dolarOficial: number;
   dolarBlue: number;
   conversionDolarEuro: number;
@@ -168,4 +170,99 @@ export function calculateReservation(
 
   const result = config.formula(amount, rates);
   return parseFloat(result.toFixed(2));
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Cálculo completo del cobro (única fuente de verdad: carga 2, resumen y     */
+/*  recibo usan esta función).                                                 */
+/* ------------------------------------------------------------------------- */
+
+/** Tipo de cambio dólar → euro usado en las fórmulas con EUR. */
+export const CONVERSION_DOLAR_EURO = 1.09;
+
+type ValorNumerico = string | number | null | undefined;
+
+export interface DetalleCobroInput {
+  /** Valor de la reserva (USD), cargado en la etapa 1. */
+  valorReserva: ValorNumerico;
+  extraCheck?: ValorNumerico;
+  mediaEstadia?: ValorNumerico;
+  /** "si" | "no". Con "no" el huésped adicional no suma. */
+  adicionalHuesped?: string;
+  cantidadHuespedAdicional?: ValorNumerico;
+  valorHuespedAdicional?: ValorNumerico;
+  /** "si" | "no". Con "no" la cochera no suma. */
+  solicitudCochera?: string;
+  /** Valor de la cochera POR NOCHE. */
+  valorCochera?: ValorNumerico;
+  fechaIngreso?: string;
+  fechaEgreso?: string;
+  medioDePago: PaymentMethod;
+  monedaDelPago: Currency;
+  dolarOficial?: ValorNumerico;
+  dolarBlue?: ValorNumerico;
+  /** id del usuario que cobró (1 = TAMARA, 2 = MILAGROS, otros = sin recargo). */
+  quienCobro?: number;
+  appReserva?: string;
+}
+
+export interface DetalleCobro {
+  noches: number;
+  /** valor huésped adicional × cantidad */
+  extraHuesped: number;
+  /** valor cochera por noche × noches */
+  cocheraTotal: number;
+  /** Suma en USD antes de aplicar medio de pago / moneda */
+  montoBase: number;
+  /** Total a cobrar en la moneda del pago */
+  total: number;
+}
+
+/* Vacío, null, undefined o no numérico → 0 (mismo criterio que tenía CargaDos) */
+const aNumero = (valor: ValorNumerico): number => {
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const aTasa = (valor: ValorNumerico): number =>
+  valor === "" || valor === null || valor === undefined
+    ? 0
+    : parseFloat(String(valor));
+
+export function calcularDetalleCobro(input: DetalleCobroInput): DetalleCobro {
+  const noches = calculateDaysBetween(input.fechaIngreso, input.fechaEgreso);
+
+  const extraHuesped =
+    input.adicionalHuesped === "no"
+      ? 0
+      : aNumero(input.valorHuespedAdicional) *
+        aNumero(input.cantidadHuespedAdicional);
+
+  const cocheraTotal =
+    input.solicitudCochera === "no" ? 0 : aNumero(input.valorCochera) * noches;
+
+  const montoBase = calcularTotalReserva({
+    reservaBase: String(aNumero(input.valorReserva)),
+    extraCheck: String(aNumero(input.extraCheck)),
+    mediaEstadia: String(aNumero(input.mediaEstadia)),
+    extraHuesped: String(extraHuesped),
+    cochera: String(cocheraTotal),
+  });
+
+  const rates: ExchangeRates = {
+    dolarOficial: aTasa(input.dolarOficial),
+    dolarBlue: aTasa(input.dolarBlue),
+    conversionDolarEuro: CONVERSION_DOLAR_EURO,
+  };
+
+  const total = calculateReservation(
+    input.medioDePago,
+    input.monedaDelPago,
+    montoBase,
+    rates,
+    input.quienCobro,
+    input.appReserva as TWeb | undefined
+  );
+
+  return { noches, extraHuesped, cocheraTotal, montoBase, total };
 }

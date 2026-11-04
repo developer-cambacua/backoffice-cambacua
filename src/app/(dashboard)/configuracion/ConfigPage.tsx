@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { TabsSection } from "@/components/tabs/Tabs";
 import Formularios from "./Formularios";
+import LiberadorEspacio from "./LiberadorEspacio";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@/components/spinner/Spinner";
 import { Toast } from "@/components/toast/Toast";
@@ -110,16 +111,9 @@ export default function ConfigPage({
                 ),
               },
               {
-                value: "ConfiguracionGeneral",
-                label: "Configuración General",
-                content: <p>Contenido de Configuración General</p>,
-                disabled: true,
-              },
-              {
-                value: "Usuarios",
-                label: "Usuarios",
-                content: <p>Contenido de Usuarios</p>,
-                disabled: true,
+                value: "liberador",
+                label: "Liberador de espacio",
+                content: <LiberadorEspacio />,
               },
             ]}
           />

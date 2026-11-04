@@ -62,7 +62,7 @@ export const StepForm1 = ({
           </div>
           {isFetching && (
             <div className="col-span-12">
-              <Spinner />
+              <Spinner inline />
             </div>
           )}
           {debouncedSearchQuery !== "" &&

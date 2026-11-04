@@ -3,8 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   ajustarFechaUTC,
-  calcularTotalReserva,
-  calculateDaysBetween,
   formatDate,
   getAppReserva,
   renameFile,
@@ -18,13 +16,14 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas2,
   pickStepSchema,
+  schemaCargaDos,
   updateReservaSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { currency } from "@/utils/objects/paymentMethods";
 import {
-  calculateReservation,
+  calcularDetalleCobro,
   calculationConfig,
   Currency,
   PaymentMethod,
@@ -206,10 +205,6 @@ export default function CargaDos({
     }
   }, [solicitudCochera, setValue, clearErrors]);
 
-  const calcularNochesReservas = calculateDaysBetween(
-    reserva?.fecha_ingreso,
-    reserva?.fecha_egreso,
-  );
   const filteredCurrencies = useMemo(() => {
     if (!medioDePago) return [];
     return calculationConfig
@@ -239,43 +234,26 @@ export default function CargaDos({
     }
   }, [medioDePago, filteredCurrencies, monedaDelPago, setValue]);
 
-  const amount = calcularTotalReserva({
-    reservaBase: reserva?.valor_reserva.toString() || "0",
-    extraCheck: formData?.extra_check || "0",
-    mediaEstadia: formData?.media_estadia || "0",
-    extraHuesped: (
-      Number(formData?.valor_huesped_adicional) *
-      Number(formData?.cantidad_huesped_adicional)
-    ).toString(),
-    cochera: (
-      Number(formData.valor_cochera) * calcularNochesReservas
-    ).toString(),
-  });
-
-  interface ExchangeRates {
-    dolarOficial: number;
-    dolarBlue: number;
-    conversionDolarEuro: number;
-  }
-
-  const rates: ExchangeRates = {
-    dolarOficial: formData.valor_dolar_oficial
-      ? parseFloat(formData.valor_dolar_oficial)
-      : 0,
-    dolarBlue: formData.valor_dolar_blue
-      ? parseFloat(formData.valor_dolar_blue)
-      : 0,
-    conversionDolarEuro: 1.09,
-  };
-
-  const totalReserva = calculateReservation(
+  /* Única fuente de verdad del cobro (ver paymentFunction.ts y sus tests) */
+  const detalleCobro = calcularDetalleCobro({
+    valorReserva: reserva?.valor_reserva,
+    extraCheck: formData.extra_check,
+    mediaEstadia: formData.media_estadia,
+    adicionalHuesped: formData.adicional_huesped,
+    cantidadHuespedAdicional: formData.cantidad_huesped_adicional,
+    valorHuespedAdicional: formData.valor_huesped_adicional,
+    solicitudCochera: formData.solicitud_cochera,
+    valorCochera: formData.valor_cochera,
+    fechaIngreso: reserva?.fecha_ingreso,
+    fechaEgreso: reserva?.fecha_egreso,
     medioDePago,
     monedaDelPago,
-    amount,
-    rates,
-    selectedCollector,
-    app,
-  );
+    dolarOficial: formData.valor_dolar_oficial,
+    dolarBlue: formData.valor_dolar_blue,
+    quienCobro: selectedCollector,
+    appReserva: app,
+  });
+  const totalReserva = detalleCobro.total;
 
   type Step = {
     number: number;
@@ -365,52 +343,11 @@ export default function CargaDos({
     [],
   );
 
-  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
+  /* Schema del paso actual con las reglas condicionales (definidas en validationSchema.ts) */
   useEffect(() => {
-    let fullSchema: z.AnyZodObject = updateReservaSchema;
-    if (adicionalHuesped === "si") {
-      fullSchema = fullSchema.extend({
-        cantidad_huesped_adicional: z
-          .number()
-          .min(1, "El mínimo es 1 huésped.")
-          .max(10, "El máximo es 10 huéspedes.")
-          .default(1),
-        valor_huesped_adicional: z.string().min(1, "Este campo es obligatorio"),
-      });
-    }
-
-    if (solicitudCochera === "si") {
-      fullSchema = fullSchema.extend({
-        valor_cochera: z
-          .string()
-          .min(1, "Este campo es obligatorio")
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          ),
-      });
-    }
-
-    if (appReserva === "booking") {
-      fullSchema = fullSchema.extend({
-        impuesto_municipal: z
-          .string()
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          )
-          .optional(),
-        iva: z
-          .string()
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          )
-          .optional(),
-      });
-    }
-
-    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+    setCurrentSchema(
+      pickStepSchema(schemaCargaDos({ adicionalHuesped, solicitudCochera, appReserva }), steps[currentStep].fields),
+    );
   }, [currentStep, steps, adicionalHuesped, solicitudCochera, appReserva]);
 
   /* Si es un huésped nuevo, verifica que el documento no esté ya cargado */
@@ -504,9 +441,7 @@ export default function CargaDos({
     numero_reserva: reserva?.numero_reserva,
     valorReserva: reserva?.valor_reserva,
     extraCheck: formData.extra_check,
-    extraHuesped:
-      Number(formData.valor_huesped_adicional) *
-        Number(formData.cantidad_huesped_adicional) || null,
+    extraHuesped: detalleCobro.extraHuesped || null,
     mediaEstadia: formData.media_estadia,
     valorCochera: formData.valor_cochera,
     medioDePago: formData.medio_de_pago,
@@ -850,7 +785,7 @@ export default function CargaDos({
                           appReserva={appReserva}
                           medioDePago={medioDePago}
                           monedaDelPago={monedaDelPago}
-                          totalReserva={totalReserva}
+                          detalleCobro={detalleCobro}
                         />
                       )}
                     </div>

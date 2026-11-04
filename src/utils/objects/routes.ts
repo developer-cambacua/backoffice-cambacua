@@ -20,6 +20,7 @@ export const apiRolesMap: RolesMap = {
   "/api/users": ["superAdmin", "appOwner", "dev"],
   "/api/configuraciones": ["appOwner", "dev"],
   "/api/notificaciones": [],
+  "/api/documentacion/antigua": ["appOwner", "dev"],
 };
 
 export const apiDefaultRoles: Role[] = ["admin", "superAdmin", "appOwner", "dev"];

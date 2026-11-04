@@ -11,7 +11,8 @@ function chartNoAxesCombines() {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="M12 16v5" />
       <path d="M16 14v7" />
       <path d="M20 10v11" />
@@ -24,12 +25,12 @@ function chartNoAxesCombines() {
 
 export const sidebarData = {
   navMain: [
-    {
-      title: "Tablero",
-      url: "/tablero",
-      icon: LayoutDashboard,
-      disabled: true,
-    },
+    // {
+    //   title: "Tablero",
+    //   url: "/tablero",
+    //   icon: LayoutDashboard,
+    //   disabled: true,
+    // },
     {
       title: "Reservas",
       url: "/reservas",

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import {
-  calculateDaysBetween, formatterMap } from "@/utils/functions/functions";
+import { formatterMap } from "@/utils/functions/functions";
+import { DetalleCobro } from "@/utils/functions/paymentFunction";
 import { currency, payments } from "@/utils/objects/paymentMethods";
 
 interface IStepForm5 {
@@ -11,7 +11,8 @@ interface IStepForm5 {
   appReserva: string;
   medioDePago: string;
   monedaDelPago: string;
-  totalReserva: number;
+  /* Montos calculados por calcularDetalleCobro (misma fuente que el total guardado) */
+  detalleCobro: DetalleCobro;
 }
 
 export const StepForm5 = ({
@@ -22,14 +23,14 @@ export const StepForm5 = ({
   appReserva,
   medioDePago,
   monedaDelPago,
-  totalReserva,
+  detalleCobro,
 }: IStepForm5) => {
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, []);
 
   const formattedTotal = formatterMap[monedaDelPago]
-    ? formatterMap[monedaDelPago](totalReserva)
+    ? formatterMap[monedaDelPago](detalleCobro.total)
     : "Moneda no soportada";
 
   return (
@@ -67,9 +68,7 @@ export const StepForm5 = ({
                           <div className="flex items-center justify-between">
                             <p>Extra huésped</p>
                             <p>
-                              $
-                              {Number(formData.valor_huesped_adicional) *
-                                Number(formData.cantidad_huesped_adicional)}
+                              ${detalleCobro.extraHuesped}
                             </p>
                           </div>
                         </li>
@@ -88,13 +87,7 @@ export const StepForm5 = ({
                           <div className="flex items-center justify-between">
                             <p>Cochera</p>
                             <p>
-                              $
-                              {formData.valor_cochera &&
-                                parseFloat(formData.valor_cochera) *
-                                  calculateDaysBetween(
-                                    reserva?.fecha_ingreso,
-                                    reserva?.fecha_egreso
-                                  )}
+                              ${detalleCobro.cocheraTotal}
                             </p>
                           </div>
                         </li>

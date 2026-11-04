@@ -8,6 +8,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas,
   createReservaSchema,
+  schemaCargaUno,
   pickStepSchema,
 } from "@/utils/objects/validationSchema";
 import { useQuery } from "@tanstack/react-query";
@@ -127,23 +128,11 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
     initialData: data,
   });
 
-  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
+  /* Schema del paso actual con las reglas condicionales (definidas en validationSchema.ts) */
   useEffect(() => {
-    let fullSchema: z.AnyZodObject = createReservaSchema;
-
-    if (selectedApp === "booking") {
-      fullSchema = fullSchema.extend({
-        valor_comision_app: z
-          .string()
-          .min(1, "Ingresá un valor de comisión")
-          .regex(
-            /^\d{0,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales"
-          ),
-      });
-    }
-
-    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+    setCurrentSchema(
+      pickStepSchema(schemaCargaUno({ appReserva: selectedApp }), steps[currentStep].fields),
+    );
   }, [currentStep, steps, selectedApp]);
 
   function mergeFormData<T>(

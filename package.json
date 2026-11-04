@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "tailwind": "tailwindcss -i ./src/css/globals.css -o ./src/css/style.css --watch",
-    "test": "jest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@headlessui/react": "1.7.18",
@@ -60,23 +61,16 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^30.0.0",
     "@types/node": "20.19.1",
     "@types/react": "18.3.23",
     "@types/react-dom": "^18",
     "@types/react-json-to-csv": "^1.2.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
-    "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
     "postcss": "^8",
     "supabase": "^2.48.3",
     "tailwindcss": "^3.4.1",
-    "ts-jest": "^29.4.0",
-    "ts-node": "^10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vitest": "^3.2.7"
   }
 }
