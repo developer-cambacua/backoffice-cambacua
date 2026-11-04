@@ -3,6 +3,7 @@ import { Toast } from "@/components/toast/Toast";
 import { toast } from "sonner";
 import { ApiError, IDepartamento } from "@/types/supabaseTypes";
 import { getChangedFields } from "@/utils/functions/functions";
+import { POLLING_DATOS_MS } from "@/constants/polling";
 
 export type DeptPayload = {
   nombre: string;
@@ -24,6 +25,7 @@ export const useDeptos = (data: IDepartamento[]) => {
       return res.json();
     },
     initialData: data,
+    refetchInterval: POLLING_DATOS_MS,
   });
 };
 

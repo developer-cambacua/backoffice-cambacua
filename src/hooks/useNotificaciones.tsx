@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { POLLING_NOTIFICACIONES_MS } from "@/constants/polling";
 
 export const useNotificaciones = () => {
   return useQuery({
@@ -12,5 +13,6 @@ export const useNotificaciones = () => {
       return res.json();
     },
     refetchOnMount: false,
+    refetchInterval: POLLING_NOTIFICACIONES_MS,
   });
 };

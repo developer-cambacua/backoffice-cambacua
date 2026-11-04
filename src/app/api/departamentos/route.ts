@@ -28,7 +28,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = deptosSchema.parse(body);
 
-    console.log(parsed)
 
     const { data, error } = await supabase
       .from("departamentos")

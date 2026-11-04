@@ -5,7 +5,6 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { fileName: string } }
 ) {
-  console.log("soy el filename:", params.fileName);
   const supabase = await createServerSupabase();
   const bucketName = "documentacion";
   const { fileName } = params;

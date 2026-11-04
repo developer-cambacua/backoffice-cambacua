@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
 import { getChangedFields } from "@/utils/functions/functions";
+import { POLLING_DATOS_MS } from "@/constants/polling";
 import { ApiError, IUsuario } from "@/types/supabaseTypes";
 
 type TUserData = {
@@ -27,6 +28,7 @@ export const useUsuarios = (data: IUsuario[]) => {
       return res.json();
     },
     initialData: data,
+    refetchInterval: POLLING_DATOS_MS,
   });
 };
 

@@ -1,9 +1,7 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
 import {
   Info,
   CheckCircle,
@@ -39,7 +37,6 @@ export type Notification = {
 // }
 
 const Notifications = () => {
-  const queryClient = useQueryClient();
   const [hiddenNotifications, setHiddenNotifications] = useState<Set<string>>(
     new Set()
   );
@@ -76,23 +73,6 @@ const Notifications = () => {
     () => ["/", "/reservas/carga-1", "/reservas/carga-2", "/reservas/carga-3"],
     []
   );
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("realtime-notifications")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["notificaciones"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
 
   const visibleNotifications = NotificationsData.filter(
     (notification: Notification) => !hiddenNotifications.has(notification.id)

@@ -1,10 +1,8 @@
 "use client";
 
-import { supabase } from "@/utils/supabase/client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Spinner } from "@/components/spinner/Spinner";
-import { useQueryClient } from "@tanstack/react-query";
 import { useUserStore } from "@/stores/useUserStore";
 import { useUsuarios } from "@/hooks/useUsuarios";
 import { Button } from "@/components/buttons/Button";
@@ -16,30 +14,12 @@ export default function UsuariosPage({
 }: {
   initialUsers: IUsuario[];
 }) {
-  const queryClient = useQueryClient();
   const user = useUserStore((state) => state.user);
   const userEmail = user?.email;
   const { data: usuarios, isLoading: isLoadingUsers } =
     useUsuarios(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const usuariosTableRef = useRef<UsuariosTableHandle>(null);
-
-  useEffect(() => {
-    const filteredUsersChannel = supabase
-      .channel("usuariosFilteredChannel")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "usuarios" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["usuarios"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(filteredUsersChannel);
-    };
-  }, [queryClient]);
 
   const filteredData = useCallback(() => {
     return usuarios?.filter((user: any) => {

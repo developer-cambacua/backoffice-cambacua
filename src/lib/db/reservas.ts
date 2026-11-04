@@ -1,5 +1,3 @@
-import { IReservasDefault } from "@/types/supabaseTypes";
-import { supabase as supabaseClient } from "@/utils/supabase/client";
 import { reservasSelect } from "@/utils/supabase/querys";
 import { SupabaseClient } from "@supabase/supabase-js";
 
@@ -74,12 +72,6 @@ export async function getReservationsByDepartment(
     .from("reservas")
     .select(`*, huesped:huespedes(*)`)
     .eq("departamento_id", id);
-  if (error) throw error;
-  return data;
-}
-
-export async function createReserva(reserva: IReservasDefault) {
-  const { data, error } = await supabaseClient.from("reservas").insert(reserva);
   if (error) throw error;
   return data;
 }

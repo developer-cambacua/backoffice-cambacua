@@ -2,13 +2,10 @@ import { ApiError, IReservasDefault } from "@/types/supabaseTypes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toast } from "@/components/toast/Toast";
 import { toast } from "sonner";
-import {
-  ajustarFechaUTC,
-  getChangedFields,
-  sanitizeData,
-} from "@/utils/functions/functions";
+import { ajustarFechaUTC, sanitizeData } from "@/utils/functions/functions";
 import { AddReservaInput } from "@/types/formReservas";
 import { useRouter } from "next/navigation";
+import { POLLING_DATOS_MS } from "@/constants/polling";
 
 export const useReservas = (data: IReservasDefault[]) => {
   return useQuery({
@@ -22,20 +19,7 @@ export const useReservas = (data: IReservasDefault[]) => {
       return await res.json();
     },
     initialData: data,
-  });
-};
-
-export const useReservaById = (id: number) => {
-  return useQuery({
-    queryKey: ["reserva", id],
-    queryFn: async () => {
-      const res = await fetch(`/api/reservas/${id}`);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Error desconocido");
-      }
-      return res.json();
-    },
+    refetchInterval: POLLING_DATOS_MS,
   });
 };
 
@@ -144,142 +128,4 @@ export const useUpdateReserva = (id: number) => {
       );
     },
   });
-};
-
-export const useReservasMutations = ({
-  id,
-  setIsOpen,
-}: {
-  id: number | null;
-  setIsOpen: (value: boolean) => void;
-}) => {
-  const queryClient = useQueryClient();
-
-  const editReserva = useMutation({
-    mutationFn: async ({
-      oldData,
-      newData,
-    }: {
-      oldData: Partial<IReservasDefault>;
-      newData: Partial<IReservasDefault>;
-    }) => {
-      const updatedFields = getChangedFields(oldData, {
-        /* Acá van los campos que se van a poder editar a futuro. */
-      });
-
-      /* Si uso un modal, activo estas lineas */
-      // if (Object.keys(updatedFields).length === 0) {
-      //   setIsOpen(false);
-      //   return Promise.reject({ skipToast: true });
-      // }
-
-      const res = await fetch(`/api/reservas/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFields),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        const error = new Error(errorData.message || "Error desconocido");
-        (error as any).status = res.status;
-        throw error;
-      }
-
-      const responseData = res.json();
-      return responseData;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["departamentos"] });
-      // setIsOpen(false);
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="success">
-            <p className="max-w-[30ch]">{data.message}</p>
-          </Toast>
-        ),
-        { duration: 5000 }
-      );
-    },
-    onError: (error: ApiError) => {
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="error">
-            <div>
-              <p className="max-w-[30ch]">{error.message}</p>
-            </div>
-          </Toast>
-        ),
-        { duration: 5000 }
-      );
-    },
-  });
-
-  const toggleReservaStatus = useMutation({
-    mutationFn: async ({
-      deptoId,
-      isActive,
-    }: {
-      deptoId: number;
-      isActive: boolean;
-    }) => {
-      if (!deptoId || deptoId === 0) return;
-      const res = await fetch(`/api/departamentos/${deptoId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        const error = new Error(errorData.message || "Error desconocido");
-        (error as any).status = res.status;
-        throw error;
-      }
-
-      const responseData = res.json();
-      return responseData;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["usuarios"] });
-      setIsOpen(false);
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="success">
-            <div>
-              <p className="max-w-[30ch]">{data.message}</p>
-            </div>
-          </Toast>
-        ),
-        { duration: 5000 }
-      );
-    },
-    onError: (error: ApiError) => {
-      if (error.status === 403) {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="warning">
-              <div>
-                <p className="max-w-[30ch]">{error.message}</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 5000 }
-        );
-      } else {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="error">
-              <div>
-                <p className="max-w-[30ch]">{error.message}</p>
-              </div>
-            </Toast>
-          ),
-          { duration: 5000 }
-        );
-      }
-    },
-  });
-
-  return { editReserva, toggleReservaStatus };
 };

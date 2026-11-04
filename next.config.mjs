@@ -1,9 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  transpilePackages: ["geist"],
-  experimental: {
-    serverComponentsExternalPackages: ["@react-pdf/renderer"],
-  },
-};
+const nextConfig = {};
 
 export default nextConfig;
