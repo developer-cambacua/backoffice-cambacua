@@ -72,8 +72,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  /* Incluye /api (salvo /api/auth, que es el login de next-auth) */
+  /* Incluye /api (salvo /api/auth, que es el login de next-auth).
+     Excluye /_vercel (scripts y eventos de Analytics / Speed Insights). */
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|access-denied|error|politica-de-privacidad).*)",
+    "/((?!api/auth|_next/static|_next/image|_vercel|favicon.ico|access-denied|error|politica-de-privacidad).*)",
   ],
 };
