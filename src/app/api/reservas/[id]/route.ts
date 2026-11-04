@@ -1,7 +1,6 @@
 import { calculateTimeDifference } from "@/utils/functions/functions";
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { reservasSelect } from "@/utils/supabase/querys";
-import { createServerSupabase } from "@/utils/supabase/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -14,7 +13,7 @@ export async function GET(
     return NextResponse.json({ message: "ID inválido" }, { status: 400 });
 
   /* Mismo select que usan las páginas server (con joins), así el refetch no pierde datos */
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("reservas")
     .select(reservasSelect)
     .eq("id", id)
@@ -42,8 +41,6 @@ export async function PATCH(
     return NextResponse.json({ message: "ID inválido" }, { status: 400 });
   const body = await req.json();
   const { responsables_limpieza, ...payload } = body;
-  /* Service role: el borrado de responsables no debe depender de las políticas RLS */
-  const supabaseAdmin = await createServerSupabase();
 
   if (
     Array.isArray(responsables_limpieza) &&

@@ -56,7 +56,7 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
     watch,
     setValue,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(currentSchema),
     defaultValues: defaultValuesReservas,
@@ -156,16 +156,25 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
     };
   }
 
+  /* Evita que un doble clic en "Siguiente" avance dos pasos salteando validaciones */
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
   const next = async () => {
-    const fields = steps[currentStep].fields;
-    const output = await trigger(fields, { shouldFocus: true });
-    if (!output) return;
-    if (currentStep < steps.length - 1) {
-      const currentData = getValues();
-      setFormData((prevData) => mergeFormData(prevData, currentData));
-      setCurrentStep((step) => step + 1);
-    } else {
-      await handleSubmit(processForm)();
+    if (isAdvancing) return;
+    setIsAdvancing(true);
+    try {
+      const fields = steps[currentStep].fields;
+      const output = await trigger(fields, { shouldFocus: true });
+      if (!output) return;
+      if (currentStep < steps.length - 1) {
+        const currentData = getValues();
+        setFormData((prevData) => mergeFormData(prevData, currentData));
+        setCurrentStep((step) => step + 1);
+      } else {
+        await handleSubmit(processForm)();
+      }
+    } finally {
+      setIsAdvancing(false);
     }
   };
 
@@ -308,7 +317,8 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
                       variant="solid"
                       color="primary"
                       type="button"
-                      onClick={next}>
+                      onClick={next}
+                      disabled={isAdvancing}>
                       Siguiente
                     </Button>
                   )}
@@ -317,8 +327,12 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
                       variant="solid"
                       color="primary"
                       type="submit"
-                      disabled={addReserva.isPending || addReserva.isSuccess}>
-                      {addReserva.isPending ? (
+                      disabled={
+                        isSubmitting ||
+                        addReserva.isPending ||
+                        addReserva.isSuccess
+                      }>
+                      {isSubmitting || addReserva.isPending ? (
                         <span className="flex items-center gap-x-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Cargando...

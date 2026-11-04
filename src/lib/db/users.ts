@@ -1,8 +1,8 @@
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getUsers(userEmail?: string) {
-  let query = supabase
+  let query = supabaseAdmin
     .from("usuarios")
     .select("*")
     .order("id", { ascending: false })

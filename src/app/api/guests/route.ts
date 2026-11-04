@@ -20,7 +20,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data);
   }
 
-  const query = searchParams.get("q") || "";
+  /* Se dejan sólo letras, números, espacios y . @ _ - : así el texto no puede
+     romper ni alterar el filtro `.or(...)` de PostgREST (comas, paréntesis, etc.) */
+  const query = (searchParams.get("q") || "")
+    .replace(/[^\p{L}\p{N}\s.@_-]/gu, "")
+    .trim()
+    .slice(0, 50);
 
   if (!query) return NextResponse.json([]);
 

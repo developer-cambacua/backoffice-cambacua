@@ -1,4 +1,4 @@
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
   if (isNaN(id))
     return NextResponse.json({ message: "ID inválido" }, { status: 400 });
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("departamentos")
     .select("*")
     .eq("id", id)
@@ -37,7 +37,7 @@ export async function PUT(
     );
   }
 
-  const { error } = await supabase.from("departamentos").update(body).eq("id", id);
+  const { error } = await supabaseAdmin.from("departamentos").update(body).eq("id", id);
 
   if (error)
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -61,7 +61,7 @@ export async function PATCH(
   if (typeof isActive !== "boolean")
     return NextResponse.json({ message: "Estado inválido" }, { status: 400 });
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("departamentos")
     .update({ isActive: !isActive })
     .eq("id", id);

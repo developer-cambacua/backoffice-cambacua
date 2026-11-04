@@ -1,15 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { Toast } from "@/components/toast/Toast";
 
 async function cancelarReserva(id: number) {
-  const { error } = await supabase
-    .from("reservas")
-    .update({ estado_reserva: "cancelado" })
-    .eq("id", id);
+  const res = await fetch(`/api/reservas/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado_reserva: "cancelado" }),
+  });
 
-  if (error) throw error;
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error desconocido");
+  }
 
   return id;
 }

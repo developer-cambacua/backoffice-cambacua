@@ -1,4 +1,4 @@
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("notifications")
     .select("id, message, type")
     .eq("visible", true)

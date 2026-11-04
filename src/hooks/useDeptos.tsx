@@ -169,7 +169,7 @@ export const useDeptosMutations = ({
       return responseData;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["usuarios"] });
+      queryClient.invalidateQueries({ queryKey: ["departamentos"] });
       setIsOpen(false);
       toast.custom(
         (id) => (

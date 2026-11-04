@@ -41,7 +41,7 @@ export default function UsuariosForm({
     control,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: selectedUser ? selectedUser : defaultValueUsers,
@@ -253,10 +253,10 @@ export default function UsuariosForm({
             <Button
               color="primary"
               type="submit"
-              disabled={addUser.isPending || editUser.isPending}
+              disabled={isSubmitting || addUser.isPending || editUser.isPending}
               fontSize="md"
               width="responsive">
-              {addUser.isPending || editUser.isPending ? (
+              {isSubmitting || addUser.isPending || editUser.isPending ? (
                 <span className="flex items-center gap-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Cargando

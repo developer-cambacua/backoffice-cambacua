@@ -1,9 +1,9 @@
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("configuraciones")
     .select("*")
     .single();
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id, ...data } = body;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("configuraciones")
       .update(data)
       .eq("id", id);

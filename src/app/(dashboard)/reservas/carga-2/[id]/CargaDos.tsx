@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "@/utils/supabase/client";
 import {
   ajustarFechaUTC,
   calcularTotalReserva,
@@ -169,7 +168,7 @@ export default function CargaDos({
     clearErrors,
     reset,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
@@ -439,37 +438,46 @@ export default function CargaDos({
     };
   }
 
+  /* Evita que un doble clic en "Siguiente" avance dos pasos salteando validaciones */
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
   const next = async () => {
-    const fields: any = steps[currentStep].fields;
-    const output = await trigger(fields, { shouldFocus: true });
-    if (!output) return;
+    if (isAdvancing) return;
+    setIsAdvancing(true);
+    try {
+      const fields: any = steps[currentStep].fields;
+      const output = await trigger(fields, { shouldFocus: true });
+      if (!output) return;
 
-    if (currentStep === 1 && !selectedGuest) {
-      const existe = await existeHuespedConDocumento(
-        getValues("numero_identificacion"),
-      );
-      if (existe) {
-        toast.custom(
-          (id) => (
-            <Toast id={id} variant="warning">
-              <p className="max-w-[30ch]">
-                Ya existe un huésped con ese número de documento. Volvé al paso
-                anterior, buscalo y seleccionalo.
-              </p>
-            </Toast>
-          ),
-          { duration: 7500 },
+      if (currentStep === 1 && !selectedGuest) {
+        const existe = await existeHuespedConDocumento(
+          getValues("numero_identificacion"),
         );
-        return;
+        if (existe) {
+          toast.custom(
+            (id) => (
+              <Toast id={id} variant="warning">
+                <p className="max-w-[30ch]">
+                  Ya existe un huésped con ese número de documento. Volvé al
+                  paso anterior, buscalo y seleccionalo.
+                </p>
+              </Toast>
+            ),
+            { duration: 7500 },
+          );
+          return;
+        }
       }
-    }
 
-    if (currentStep < steps.length - 1) {
-      const currentData = getValues();
-      setFormData((prevData: any) => mergeFormData(prevData, currentData));
-      setCurrentStep((step) => step + 1);
-    } else {
-      await handleSubmit(processForm)();
+      if (currentStep < steps.length - 1) {
+        const currentData = getValues();
+        setFormData((prevData: any) => mergeFormData(prevData, currentData));
+        setCurrentStep((step) => step + 1);
+      } else {
+        await handleSubmit(processForm)();
+      }
+    } finally {
+      setIsAdvancing(false);
     }
   };
 
@@ -875,7 +883,7 @@ export default function CargaDos({
                             variant="solid"
                             type="button"
                             onClick={next}
-                            disabled={currentStep === 0}>
+                            disabled={currentStep === 0 || isAdvancing}>
                             Siguiente
                           </Button>
                         )}
@@ -884,10 +892,14 @@ export default function CargaDos({
                             color="primary"
                             variant="solid"
                             type="submit"
+                            /* isSubmitting cubre la creación del huésped y la subida
+                               del documento, que pasan antes de updateReserva */
                             disabled={
-                              updateReserva.isPending || updateReserva.isSuccess
+                              isSubmitting ||
+                              updateReserva.isPending ||
+                              updateReserva.isSuccess
                             }>
-                            {updateReserva.isPending ? (
+                            {isSubmitting || updateReserva.isPending ? (
                               <span className="flex items-center gap-x-2">
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 Cargando...

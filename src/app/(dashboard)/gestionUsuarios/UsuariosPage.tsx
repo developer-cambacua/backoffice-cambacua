@@ -19,10 +19,8 @@ export default function UsuariosPage({
   const queryClient = useQueryClient();
   const user = useUserStore((state) => state.user);
   const userEmail = user?.email;
-  const { data: usuarios, isLoading: isLoadingUsers } = useUsuarios(
-    initialUsers,
-    userEmail
-  );
+  const { data: usuarios, isLoading: isLoadingUsers } =
+    useUsuarios(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const usuariosTableRef = useRef<UsuariosTableHandle>(null);
 
@@ -33,7 +31,7 @@ export default function UsuariosPage({
         "postgres_changes",
         { event: "*", schema: "public", table: "usuarios" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["usuarios", userEmail] });
+          queryClient.invalidateQueries({ queryKey: ["usuarios"] });
         }
       )
       .subscribe();
@@ -41,7 +39,7 @@ export default function UsuariosPage({
     return () => {
       supabase.removeChannel(filteredUsersChannel);
     };
-  }, [userEmail, queryClient]);
+  }, [queryClient]);
 
   const filteredData = useCallback(() => {
     return usuarios?.filter((user: any) => {

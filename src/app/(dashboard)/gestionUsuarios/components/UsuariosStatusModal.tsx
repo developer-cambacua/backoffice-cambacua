@@ -53,6 +53,7 @@ const UsuariosStatusModal = ({
         <Button
           variant="solid"
           color={selectedUser && selectedUser.isActive ? "error" : "primary"}
+          disabled={toggleUserStatus.isPending}
           onClick={() => {
             if (!selectedUser) return;
             toggleUserStatus.mutate({
@@ -61,7 +62,11 @@ const UsuariosStatusModal = ({
               isActive: selectedUser.isActive,
             });
           }}>
-          {selectedUser && selectedUser.isActive ? "Deshabilitar" : "Habilitar"}
+          {toggleUserStatus.isPending
+            ? "Cargando..."
+            : selectedUser && selectedUser.isActive
+              ? "Deshabilitar"
+              : "Habilitar"}
         </Button>
       </Modal.Footer>
     </Modal>

@@ -12,11 +12,12 @@ type TUserData = {
   rol: string;
 };
 
-export const useUsuarios = (data: IUsuario[], email?: string) => {
+/* Sin `enabled: false`: una query deshabilitada ignora las invalidaciones y la
+   tabla no se actualizaba tras alta/edición. El back ya filtra al usuario logueado
+   por la sesión, así que el email no hace falta en la clave. */
+export const useUsuarios = (data: IUsuario[]) => {
   return useQuery({
-    enabled: false,
-    // enabled: !!email,
-    queryKey: ["usuarios", email],
+    queryKey: ["usuarios"],
     queryFn: async () => {
       const res = await fetch("/api/users");
       if (!res.ok) {

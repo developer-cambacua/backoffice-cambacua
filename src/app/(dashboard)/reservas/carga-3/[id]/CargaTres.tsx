@@ -118,7 +118,7 @@ export default function CargaTres({
     setValue,
     clearErrors,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
@@ -204,16 +204,25 @@ export default function CargaTres({
     };
   }
 
+  /* Evita que un doble clic en "Siguiente" avance dos pasos salteando validaciones */
+  const [isAdvancing, setIsAdvancing] = useState(false);
+
   const next = async () => {
-    const fields: any = steps[currentStep].fields;
-    const output = await trigger(fields, { shouldFocus: true });
-    if (!output) return;
-    if (currentStep < steps.length - 1) {
-      const currentData = getValues();
-      setFormData((prevData) => mergeFormData(prevData, currentData));
-      setCurrentStep((step) => step + 1);
-    } else {
-      await handleSubmit(processForm)();
+    if (isAdvancing) return;
+    setIsAdvancing(true);
+    try {
+      const fields: any = steps[currentStep].fields;
+      const output = await trigger(fields, { shouldFocus: true });
+      if (!output) return;
+      if (currentStep < steps.length - 1) {
+        const currentData = getValues();
+        setFormData((prevData) => mergeFormData(prevData, currentData));
+        setCurrentStep((step) => step + 1);
+      } else {
+        await handleSubmit(processForm)();
+      }
+    } finally {
+      setIsAdvancing(false);
     }
   };
 
@@ -1163,10 +1172,13 @@ export default function CargaTres({
                                 color="primary"
                                 type="submit"
                                 disabled={
+                                  isSubmitting ||
                                   updateReserva.isPending ||
                                   updateReserva.isSuccess
                                 }>
-                                Finalizar
+                                {isSubmitting || updateReserva.isPending
+                                  ? "Cargando..."
+                                  : "Finalizar"}
                               </Button>
                             </div>
                           )}
@@ -1188,7 +1200,8 @@ export default function CargaTres({
                             variant="solid"
                             color="primary"
                             type="button"
-                            onClick={next}>
+                            onClick={next}
+                            disabled={isAdvancing}>
                             Siguiente
                           </Button>
                         )}

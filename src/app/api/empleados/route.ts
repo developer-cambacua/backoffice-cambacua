@@ -4,11 +4,18 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase
+  /* Reportes necesita también a los inactivos (reservas históricas) */
+  const incluirInactivos =
+    req.nextUrl.searchParams.get("incluirInactivos") === "true";
+
+  let query = supabase
     .from("usuarios")
     .select(`nombre, apellido, id`)
-    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin", "propietario"])
-    .eq("isActive", true);
+    .in("rol", ["admin", "limpieza", "appOwner", "superAdmin", "propietario"]);
+
+  if (!incluirInactivos) query = query.eq("isActive", true);
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json(

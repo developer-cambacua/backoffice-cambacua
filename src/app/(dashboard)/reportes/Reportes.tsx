@@ -4,8 +4,6 @@ import { TabsSection } from "@/components/tabs/Tabs";
 import { ReporteChecks } from "./ReporteChecks";
 import { ReporteLimpieza } from "./ReporteLimpieza";
 import { ReporteFichas } from "./ReporteFichas";
-import { reservasSelect } from "@/utils/supabase/querys";
-import { supabase } from "@/utils/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { IReservasDefault } from "@/types/supabaseTypes";
 
@@ -24,29 +22,22 @@ export default function Reportes({
   empleadosFromServer: EmpleadosTransformedData[];
   responsablesFromServer: any[];
 }) {
-  const fetchReservas = async () => {
-    const { data, error } = await supabase
-      .from("reservas")
-      .select(reservasSelect)
-      .order("fecha_egreso", { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data || [];
+  const fetchApi = async (url: string) => {
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Error desconocido");
+    }
+    return res.json();
   };
 
-  const fetchEmpleados = async () => {
-    const { data, error } = await supabase
-      .from("usuarios")
-      .select("*")
-      .in("rol", [
-        "superAdmin",
-        "admin",
-        "propietario",
-        "appOwner",
-        "limpieza",
-      ]);
+  const fetchReservas = async (): Promise<IReservasDefault[]> =>
+    (await fetchApi("/api/reservas")) || [];
 
-    if (error) throw new Error(error.message);
+  const fetchEmpleados = async () => {
+    const data: { id: number; nombre: string; apellido: string }[] =
+      await fetchApi("/api/empleados?incluirInactivos=true");
+
     return [
       { key: "Todos", label: "Todos los empleados", value: undefined },
       ...data.map((empleado, index) => ({
@@ -68,32 +59,25 @@ export default function Reportes({
 
   const fetchResponsablesDeLimpieza = async (): Promise<
     ResponsableLimpieza[]
-  > => {
-    const { data, error } = await supabase.from("responsables_limpieza")
-      .select(`
-        reserva_id,
-        tiempo_limpieza,
-        hora_ingreso,
-        hora_egreso,
-        empleado:empleado_id (
-          id,
-          nombre,
-          apellido
-        )
-  `);
+  > => (await fetchApi("/api/responsables")) || [];
 
-    if (error) throw new Error(error.message);
-    return data || [];
-  };
-
+  /* ["reservas"] se comparte con el listado de reservas (otro orden), así que
+     el orden por fecha de egreso se aplica acá con `select` */
   const { data: reservas } = useQuery({
     queryKey: ["reservas"],
     queryFn: fetchReservas,
     initialData: reservasFromServer,
+    select: (data: IReservasDefault[]) =>
+      [...data].sort(
+        (a, b) =>
+          new Date(b.fecha_egreso).getTime() -
+          new Date(a.fecha_egreso).getTime()
+      ),
   });
 
+  /* Clave propia: carga 2/3 usan ["empleados"] con otra forma de datos */
   const { data: empleados } = useQuery({
-    queryKey: ["empleados"],
+    queryKey: ["empleados", "opciones-reportes"],
     queryFn: fetchEmpleados,
     initialData: empleadosFromServer,
   });

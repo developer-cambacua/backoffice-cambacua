@@ -67,11 +67,9 @@ export default function ReservasPage({
     setSelectedReserva(reserva);
   }, []);
 
-  const {
-    mutate: cancelarReserva,
-    isPending,
-    isSuccess,
-  } = useCancelarReserva(() => {
+  /* Sólo isPending: isSuccess quedaba en true tras la primera cancelación y
+     bloqueaba el botón para las siguientes hasta recargar la página */
+  const { mutate: cancelarReserva, isPending } = useCancelarReserva(() => {
     setIsOpen(false);
   });
 
@@ -446,7 +444,7 @@ export default function ReservasPage({
             variant="solid"
             color="error"
             onClick={() => cancelarReserva(selectedReserva.id)}
-            disabled={isPending || isSuccess}>
+            disabled={isPending}>
             {isPending ? "Cargando" : "Confirmar"}
           </Button>
         </Modal.Footer>

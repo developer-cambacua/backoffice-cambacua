@@ -48,7 +48,7 @@ export default function DeptosForm({
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(deptosSchema),
     defaultValues: defaultValuesForm,
@@ -308,8 +308,8 @@ export default function DeptosForm({
               fontSize="md"
               width="responsive"
               type="submit"
-              disabled={addDepto.isPending || editDepto.isPending}>
-              {addDepto.isPending || editDepto.isPending ? (
+              disabled={isSubmitting || addDepto.isPending || editDepto.isPending}>
+              {isSubmitting || addDepto.isPending || editDepto.isPending ? (
                 <span className="flex items-center gap-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Cargando

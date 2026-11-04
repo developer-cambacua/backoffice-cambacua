@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 import { userSchema } from "@/utils/objects/validationSchema";
-import { supabase } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("usuarios")
     .select("*")
     .order("id", { ascending: false })
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = userSchema.parse(body);
 
-    const { data: existingUsers, error: checkError } = await supabase
+    const { data: existingUsers, error: checkError } = await supabaseAdmin
       .from("usuarios")
       .select("id")
       .eq("email", parsed.email.trim());
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("usuarios")
       .insert([parsed])
       .select()
