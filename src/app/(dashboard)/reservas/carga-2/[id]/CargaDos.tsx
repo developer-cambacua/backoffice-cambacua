@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas2,
+  pickStepSchema,
   updateReservaSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
@@ -71,7 +72,9 @@ export default function CargaDos({
   const updateReserva = useUpdateReserva(id);
   const uploadDocument = useUploadDocument();
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [currentSchema, setCurrentSchema] = useState(z.object({}));
+  const [currentSchema, setCurrentSchema] = useState<z.AnyZodObject>(
+    z.object({}),
+  );
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [selectedGuest, setSelectedGuest] = useState<SelectedGuest | null>(
@@ -163,6 +166,7 @@ export default function CargaDos({
     trigger,
     getValues,
     setValue,
+    clearErrors,
     reset,
     control,
     formState: { errors },
@@ -186,6 +190,22 @@ export default function CargaDos({
   const poseeFactura = watch("posee_factura");
   const selectedCollector = watch("quien_cobro");
   const app = appReserva ? appReserva : undefined;
+
+  /* Si se vuelve a "No", se limpian los valores para que no sumen al total ni se guarden */
+  useEffect(() => {
+    if (adicionalHuesped === "no") {
+      setValue("cantidad_huesped_adicional", 0);
+      setValue("valor_huesped_adicional", "");
+      clearErrors(["cantidad_huesped_adicional", "valor_huesped_adicional"]);
+    }
+  }, [adicionalHuesped, setValue, clearErrors]);
+
+  useEffect(() => {
+    if (solicitudCochera === "no") {
+      setValue("valor_cochera", "");
+      clearErrors("valor_cochera");
+    }
+  }, [solicitudCochera, setValue, clearErrors]);
 
   const calcularNochesReservas = calculateDaysBetween(
     reserva?.fecha_ingreso,
@@ -258,61 +278,6 @@ export default function CargaDos({
     app,
   );
 
-  useEffect(() => {
-    let newSchema: any = updateReservaSchema;
-    if (adicionalHuesped === "si") {
-      newSchema = newSchema.extend({
-        cantidad_huesped_adicional: z
-          .number()
-          .min(1, "El mínimo es 1 huésped.")
-          .max(10, "El máximo es 10 huéspedes.")
-          .default(1),
-        valor_huesped_adicional: z.string().min(1, "Este campo es obligatorio"),
-      });
-    }
-
-    if (solicitudCochera === "si") {
-      newSchema = newSchema.extend({
-        valor_cochera: z
-          .string()
-          .min(1, "Este campo es obligatorio")
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          ),
-      });
-    }
-
-    if (appReserva === "booking") {
-      newSchema = newSchema.extend({
-        impuesto_municipal: z
-          .string()
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          )
-          .optional(),
-      });
-      newSchema = newSchema.extend({
-        iva: z
-          .string()
-          .regex(
-            /^\d{1,9}(\.\d{0,2})?$/,
-            "Solo se permiten números con hasta dos decimales",
-          )
-          .optional(),
-      });
-    }
-    setCurrentSchema(newSchema);
-  }, [
-    adicionalHuesped,
-    appReserva,
-    solicitudCochera,
-    poseeFactura,
-    medioDePago,
-    formData.extra_check,
-  ]);
-
   type Step = {
     number: number;
     id: string;
@@ -363,6 +328,7 @@ export default function CargaDos({
           "iva",
           "impuesto_municipal",
           "adicional_huesped",
+          "cantidad_huesped_adicional",
           "valor_huesped_adicional",
           "solicitud_cochera",
           "valor_cochera",
@@ -400,6 +366,69 @@ export default function CargaDos({
     [],
   );
 
+  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
+  useEffect(() => {
+    let fullSchema: z.AnyZodObject = updateReservaSchema;
+    if (adicionalHuesped === "si") {
+      fullSchema = fullSchema.extend({
+        cantidad_huesped_adicional: z
+          .number()
+          .min(1, "El mínimo es 1 huésped.")
+          .max(10, "El máximo es 10 huéspedes.")
+          .default(1),
+        valor_huesped_adicional: z.string().min(1, "Este campo es obligatorio"),
+      });
+    }
+
+    if (solicitudCochera === "si") {
+      fullSchema = fullSchema.extend({
+        valor_cochera: z
+          .string()
+          .min(1, "Este campo es obligatorio")
+          .regex(
+            /^\d{1,9}(\.\d{0,2})?$/,
+            "Solo se permiten números con hasta dos decimales",
+          ),
+      });
+    }
+
+    if (appReserva === "booking") {
+      fullSchema = fullSchema.extend({
+        impuesto_municipal: z
+          .string()
+          .regex(
+            /^\d{1,9}(\.\d{0,2})?$/,
+            "Solo se permiten números con hasta dos decimales",
+          )
+          .optional(),
+        iva: z
+          .string()
+          .regex(
+            /^\d{1,9}(\.\d{0,2})?$/,
+            "Solo se permiten números con hasta dos decimales",
+          )
+          .optional(),
+      });
+    }
+
+    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+  }, [currentStep, steps, adicionalHuesped, solicitudCochera, appReserva]);
+
+  /* Si es un huésped nuevo, verifica que el documento no esté ya cargado */
+  const existeHuespedConDocumento = async (numero: string) => {
+    try {
+      const res = await fetch(
+        `/api/guests?numero_identificacion=${encodeURIComponent(numero.trim())}`,
+      );
+      if (!res.ok) return false;
+      const data = await res.json();
+      return Array.isArray(data) && data.length > 0;
+    } catch {
+      /* Si falla la consulta no bloqueamos: el POST final vuelve a validar */
+      return false;
+    }
+  };
+
   function mergeFormData<T>(
     prevData: Partial<T>,
     newData: Partial<T>,
@@ -414,6 +443,27 @@ export default function CargaDos({
     const fields: any = steps[currentStep].fields;
     const output = await trigger(fields, { shouldFocus: true });
     if (!output) return;
+
+    if (currentStep === 1 && !selectedGuest) {
+      const existe = await existeHuespedConDocumento(
+        getValues("numero_identificacion"),
+      );
+      if (existe) {
+        toast.custom(
+          (id) => (
+            <Toast id={id} variant="warning">
+              <p className="max-w-[30ch]">
+                Ya existe un huésped con ese número de documento. Volvé al paso
+                anterior, buscalo y seleccionalo.
+              </p>
+            </Toast>
+          ),
+          { duration: 7500 },
+        );
+        return;
+      }
+    }
+
     if (currentStep < steps.length - 1) {
       const currentData = getValues();
       setFormData((prevData: any) => mergeFormData(prevData, currentData));
@@ -438,20 +488,6 @@ export default function CargaDos({
     }
   };
 
-  useEffect(() => {
-    const currentFields = steps[currentStep].fields;
-    const newSchema = z.object(
-      Object.fromEntries(
-        currentFields.map((field) => [
-          field,
-          updateReservaSchema.shape[
-            field as keyof typeof updateReservaSchema.shape
-          ],
-        ]),
-      ),
-    );
-    setCurrentSchema(newSchema);
-  }, [currentStep, steps]);
 
   /* --------------------------------------------------------------------- */
 
@@ -483,8 +519,10 @@ export default function CargaDos({
         tipo_identificacion: newData.tipo_identificacion,
       };
 
-      const huesped = await addHuesped.mutateAsync(huespedData);
-      const huespedId = huesped.id;
+      /* Huésped existente: se usa su id. Nuevo: se crea (el back rechaza documentos repetidos) */
+      const huespedId = selectedGuest
+        ? selectedGuest.id
+        : (await addHuesped.mutateAsync(huespedData)).id;
 
       const uploadFile = await uploadDocument.mutateAsync(
         data.documentacion_huespedes,
@@ -546,16 +584,9 @@ export default function CargaDos({
         },
       });
     } catch (error: any) {
-      toast.custom(
-        (id) => (
-          <Toast id={id} variant="error">
-            <div>
-              <p>{error.message}</p>
-            </div>
-          </Toast>
-        ),
-        { duration: 5000 },
-      );
+      /* addHuesped y uploadDocument ya muestran su propio toast en onError;
+         mostrarlo acá también lo duplicaba. */
+      console.error(error);
     }
   };
 

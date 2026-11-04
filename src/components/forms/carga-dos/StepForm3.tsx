@@ -287,7 +287,8 @@ export const StepForm3 = ({
                   <span
                     className={cn("min-w-[2rem] text-center cursor-default", {
                       "text-rojo-500":
-                        adicionalHuesped === "si" && errors.cantidad_huespedes,
+                        adicionalHuesped === "si" &&
+                        errors.cantidad_huesped_adicional,
                       "text-gray-300": adicionalHuesped === "no",
                     })}>
                     {field.value}

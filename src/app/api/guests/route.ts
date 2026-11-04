@@ -4,6 +4,22 @@ import { createServerSupabase } from "@/utils/supabase/server";
 export async function GET(req: NextRequest) {
   const supabase = await createServerSupabase();
   const { searchParams } = new URL(req.url);
+
+  /* Búsqueda exacta por documento (para validar duplicados antes de crear) */
+  const numeroIdentificacion = searchParams.get("numero_identificacion");
+  if (numeroIdentificacion) {
+    const { data, error } = await supabase
+      .from("huespedes")
+      .select("id")
+      .eq("numero_identificacion", numeroIdentificacion.trim())
+      .limit(1);
+
+    if (error)
+      return NextResponse.json({ error: error.message }, { status: 400 });
+
+    return NextResponse.json(data);
+  }
+
   const query = searchParams.get("q") || "";
 
   if (!query) return NextResponse.json([]);
@@ -38,7 +54,13 @@ export async function POST(req: NextRequest) {
     if (searchError) throw searchError;
 
     if (existingHuesped) {
-      return NextResponse.json({ id: existingHuesped.id }, { status: 200 });
+      return NextResponse.json(
+        {
+          message:
+            "Ya existe un huésped con ese número de documento. Buscalo y seleccionalo en el paso 1.",
+        },
+        { status: 409 }
+      );
     }
 
     const { data: newHuesped, error: insertError } = await supabase

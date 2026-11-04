@@ -8,6 +8,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import {
   defaultValuesReservas,
   createReservaSchema,
+  pickStepSchema,
 } from "@/utils/objects/validationSchema";
 import { useQuery } from "@tanstack/react-query";
 import { DateRange } from "react-day-picker";
@@ -33,7 +34,9 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
   const router = useRouter();
   const [selectedDepto, setSelectedDepto] = useState<any | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [currentSchema, setCurrentSchema] = useState(z.object({}));
+  const [currentSchema, setCurrentSchema] = useState<z.AnyZodObject>(
+    z.object({})
+  );
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const addReserva = useAddReserva();
   const [range, setRange] = useState<DateRange>({
@@ -124,11 +127,12 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
     initialData: data,
   });
 
+  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
   useEffect(() => {
-    let newSchema: any = createReservaSchema;
+    let fullSchema: z.AnyZodObject = createReservaSchema;
 
     if (selectedApp === "booking") {
-      newSchema = newSchema.extend({
+      fullSchema = fullSchema.extend({
         valor_comision_app: z
           .string()
           .min(1, "Ingresá un valor de comisión")
@@ -139,8 +143,8 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
       });
     }
 
-    setCurrentSchema(newSchema);
-  }, [selectedApp]);
+    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+  }, [currentStep, steps, selectedApp]);
 
   function mergeFormData<T>(
     prevData: Partial<T>,
@@ -180,21 +184,6 @@ export default function CargaUno({ data }: { data: IDepartamento[] }) {
       setCurrentStep((step) => step - 1);
     }
   };
-
-  useEffect(() => {
-    const currentFields = steps[currentStep].fields;
-    const newSchema = z.object(
-      Object.fromEntries(
-        currentFields.map((field) => [
-          field,
-          createReservaSchema.shape[
-            field as keyof typeof createReservaSchema.shape
-          ],
-        ])
-      )
-    );
-    setCurrentSchema(newSchema);
-  }, [currentStep, steps]);
 
   const onSubmit = async (data: any) => {
     addReserva.mutate(data);

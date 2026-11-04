@@ -1,6 +1,7 @@
 import { calculateTimeDifference } from "@/utils/functions/functions";
 import { supabase } from "@/utils/supabase/client";
 import { reservasSelect } from "@/utils/supabase/querys";
+import { createServerSupabase } from "@/utils/supabase/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -41,11 +42,26 @@ export async function PATCH(
     return NextResponse.json({ message: "ID inválido" }, { status: 400 });
   const body = await req.json();
   const { responsables_limpieza, ...payload } = body;
+  /* Service role: el borrado de responsables no debe depender de las políticas RLS */
+  const supabaseAdmin = await createServerSupabase();
 
   if (
     Array.isArray(responsables_limpieza) &&
     responsables_limpieza.length > 0
   ) {
+    /* Se borran los responsables previos de la reserva para que reintentar
+       (ej. si falló el update de abajo) no los duplique */
+    const { error: deleteError } = await supabaseAdmin
+      .from("responsables_limpieza")
+      .delete()
+      .eq("reserva_id", id);
+
+    if (deleteError)
+      return NextResponse.json(
+        { message: deleteError.message },
+        { status: 400 }
+      );
+
     const nuevosResponsables = responsables_limpieza.map((item: any) => ({
       reserva_id: id,
       empleado_id: item.empleado_id,
@@ -57,7 +73,7 @@ export async function PATCH(
       ),
     }));
 
-    const { error: respError } = await supabase
+    const { error: respError } = await supabaseAdmin
       .from("responsables_limpieza")
       .insert(nuevosResponsables);
 
@@ -65,7 +81,7 @@ export async function PATCH(
       return NextResponse.json({ message: respError.message }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("reservas")
     .update(payload)
     .eq("id", id)

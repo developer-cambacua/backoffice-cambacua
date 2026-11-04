@@ -23,6 +23,7 @@ import ErrorIcon from "@/assets/img/icons/main/inputs/error.svg";
 import {
   defaultValuesReservas3,
   completeReservaSchema,
+  pickStepSchema,
 } from "@/utils/objects/validationSchema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,7 +57,9 @@ export default function CargaTres({
   const router = useRouter();
   const updateReserva = useUpdateReserva(id);
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [currentSchema, setCurrentSchema] = useState(z.object({}));
+  const [currentSchema, setCurrentSchema] = useState<z.AnyZodObject>(
+    z.object({})
+  );
   const [formData, setFormData] = useState<Partial<FormData>>({});
 
   /* -------------------------------------- Supabase -------------------------------------- */
@@ -113,6 +116,7 @@ export default function CargaTres({
     trigger,
     getValues,
     setValue,
+    clearErrors,
     control,
     formState: { errors },
   } = useForm<FormData>({
@@ -142,32 +146,22 @@ export default function CargaTres({
   const responsables = watch("responsables_limpieza") || [];
   const viatico = watch("viaticos");
   const fichaLavadero = watch("ficha_lavadero");
-  const checkOutEspecial = watch("check_out_especial");
+
+  /* Si se vuelve a "No", se limpian los valores para que no se guarden */
+  useEffect(() => {
+    if (viatico === "no") {
+      setValue("valor_viatico", "");
+      setValue("a_donde_viatico", 0);
+      clearErrors(["valor_viatico", "a_donde_viatico"]);
+    }
+  }, [viatico, setValue, clearErrors]);
 
   useEffect(() => {
-    let newSchema: any = completeReservaSchema;
-
-    if (viatico === "si") {
-      newSchema = newSchema.extend({
-        valor_viatico: z
-          .string()
-          .min(1, "Este campo es obligatorio")
-          .regex(/^\d{1,9}$/, "Solo se permiten números"),
-        a_donde_viatico: z.number().min(1, "Seleccioná un valor").default(0),
-      });
+    if (fichaLavadero === "no") {
+      setValue("cantidad_fichas_lavadero", 0);
+      clearErrors("cantidad_fichas_lavadero");
     }
-
-    if (fichaLavadero === "si") {
-      newSchema = newSchema.extend({
-        cantidad_fichas_lavadero: z
-          .number()
-          .min(1, "El mínimo es 1 ficha.")
-          .max(10, "El máximo es 10 fichas."),
-      });
-    }
-
-    setCurrentSchema(newSchema);
-  }, [viatico, checkOutEspecial, fichaLavadero]);
+  }, [fichaLavadero, setValue, clearErrors]);
 
   type Step = {
     id: string;
@@ -239,20 +233,31 @@ export default function CargaTres({
     }
   };
 
+  /* Un único efecto arma el schema: reglas condicionales + campos del paso actual */
   useEffect(() => {
-    const currentFields = steps[currentStep].fields;
-    const newSchema = z.object(
-      Object.fromEntries(
-        currentFields.map((field) => [
-          field,
-          completeReservaSchema.shape[
-            field as keyof typeof completeReservaSchema.shape
-          ],
-        ])
-      )
-    );
-    setCurrentSchema(newSchema);
-  }, [currentStep, steps]);
+    let fullSchema: z.AnyZodObject = completeReservaSchema;
+
+    if (viatico === "si") {
+      fullSchema = fullSchema.extend({
+        valor_viatico: z
+          .string()
+          .min(1, "Este campo es obligatorio")
+          .regex(/^\d{1,9}$/, "Solo se permiten números"),
+        a_donde_viatico: z.number().min(1, "Seleccioná un valor").default(0),
+      });
+    }
+
+    if (fichaLavadero === "si") {
+      fullSchema = fullSchema.extend({
+        cantidad_fichas_lavadero: z
+          .number()
+          .min(1, "El mínimo es 1 ficha.")
+          .max(10, "El máximo es 10 fichas."),
+      });
+    }
+
+    setCurrentSchema(pickStepSchema(fullSchema, steps[currentStep].fields));
+  }, [currentStep, steps, viatico, fichaLavadero]);
 
   useEffect(() => {
     setValue("responsable_check_out", reserva?.responsable_check_out);

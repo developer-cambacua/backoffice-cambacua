@@ -1,6 +1,39 @@
 import { z } from "zod";
 import { esHoraValida, normalizarHoraInput } from "../functions/functions";
 
+/**
+ * Mensajes por defecto de zod en español. Sólo aplica cuando el schema no define
+ * su propio mensaje (los mensajes personalizados tienen prioridad).
+ * Caso típico: un campo que nunca se tocó llega como `undefined` y zod
+ * mostraba "Required" en vez del mensaje de `.min(1, "...")`.
+ */
+z.setErrorMap((issue, ctx) => {
+  if (issue.code === z.ZodIssueCode.invalid_type) {
+    if (
+      issue.received === z.ZodParsedType.undefined ||
+      issue.received === z.ZodParsedType.null
+    ) {
+      return { message: "Este campo es obligatorio" };
+    }
+    return { message: "El valor ingresado no es válido" };
+  }
+  return { message: ctx.defaultError };
+});
+
+/**
+ * Devuelve un schema con sólo los campos del paso actual, tomados del schema
+ * completo (que ya debe incluir las reglas condicionales). Usarlo desde un único
+ * efecto evita que las reglas condicionales se pierdan al cambiar de paso.
+ */
+export function pickStepSchema(
+  fullSchema: z.AnyZodObject,
+  fields: readonly string[]
+): z.AnyZodObject {
+  return z.object(
+    Object.fromEntries(fields.map((field) => [field, fullSchema.shape[field]]))
+  );
+}
+
 /* ------------- Validación y default values para reservas 1 , 2 y 3 ------------- */
 
 export const defaultValuesReservas = {
