@@ -58,7 +58,22 @@ export default function ReservasPage({
     estado: selectedEstado,
     date: date,
     range: range,
+    mode: mode,
   });
+
+  /* El modal edita un borrador; al abrirlo se sincroniza con lo aplicado
+     para que "Cancelar" no deje valores sin aplicar al reabrir */
+  const abrirFiltros = () => {
+    setTempDataFilters({
+      app: selectedAppReserva,
+      depto: selectedDepartamento,
+      estado: selectedEstado,
+      date,
+      range,
+      mode,
+    });
+    setIsFiltersOpen(true);
+  };
 
   /* -------------- Abrir o cerrar el modal + cerrar el modal -------------- */
 
@@ -141,10 +156,9 @@ export default function ReservasPage({
     : [];
 
   const handleModeChange = (newMode: "single" | "range") => {
-    setMode(newMode);
-
     setTempDataFilters((prev: any) => ({
       ...prev,
+      mode: newMode,
       date: newMode === "single" ? (prev.date ?? undefined) : undefined,
       range: newMode === "range" ? (prev.range ?? undefined) : undefined,
     }));
@@ -156,6 +170,7 @@ export default function ReservasPage({
     setSelectedEstado(tempDataFilters.estado);
     setDate(tempDataFilters.date);
     setRange(tempDataFilters.range);
+    setMode(tempDataFilters.mode);
     setIsFiltersOpen(false);
   };
 
@@ -166,6 +181,7 @@ export default function ReservasPage({
       estado: "",
       date: undefined,
       range: undefined,
+      mode: "single",
     });
     setSelectedAppReserva("");
     setSelectedDepartamento("");
@@ -199,7 +215,7 @@ export default function ReservasPage({
                   variant="ghost"
                   color="secondary"
                   className="flex justify-center items-center gap-2 grow"
-                  onClick={() => setIsFiltersOpen(true)}>
+                  onClick={abrirFiltros}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     height="24px"
@@ -255,7 +271,7 @@ export default function ReservasPage({
                               htmlFor: "Por_rango",
                             },
                           ]}
-                          selectedValue={mode}
+                          selectedValue={tempDataFilters.mode}
                           setSelectedValue={(value: string) =>
                             handleModeChange(value as "single" | "range")
                           }
@@ -264,9 +280,11 @@ export default function ReservasPage({
                       <div className="md:col-span-6 col-span-12">
                         <div className="flex flex-col">
                           <label className="mb-1 font-medium">
-                            {mode === "single" ? "Fecha" : "Fechas"}
+                            {tempDataFilters.mode === "single"
+                              ? "Fecha"
+                              : "Fechas"}
                           </label>
-                          {mode === "single" ? (
+                          {tempDataFilters.mode === "single" ? (
                             <DatePickerSingle
                               date={tempDataFilters.date}
                               setDate={(newDate: any) => {
@@ -343,7 +361,7 @@ export default function ReservasPage({
                           <label className="mb-1 font-medium">Estado</label>
                           <Select
                             listValues={estadoReservas}
-                            value={selectedEstado ?? ""}
+                            value={tempDataFilters.estado ?? ""}
                             onChange={(value) =>
                               setTempDataFilters((prev: any) => ({
                                 ...prev,

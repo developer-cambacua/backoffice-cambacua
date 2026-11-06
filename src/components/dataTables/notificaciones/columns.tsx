@@ -89,13 +89,17 @@ export const getColumns = ({
     id: "visible",
     header: "Visible",
     size: 140,
-    cell: ({ row }) => (
-      <Badge
-        className="whitespace-nowrap"
-        variant={row.original.visible ? "default" : "outline"}>
-        {row.original.visible ? "Visible" : "No visible"}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      /* Visible en el sistema = marcada como visible Y no vencida */
+      const enSistema = getEstado(row.original) === "activa";
+      return (
+        <Badge
+          className="whitespace-nowrap"
+          variant={enSistema ? "default" : "outline"}>
+          {enSistema ? "Visible" : "No visible"}
+        </Badge>
+      );
+    },
   },
   {
     id: "acciones",
@@ -113,10 +117,13 @@ export const getColumns = ({
           <DropdownMenuItem onClick={() => onEdit(row.original)}>
             Editar
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onToggleVisible(row.original)}>
-            Cambiar visibilidad
-          </DropdownMenuItem>
+          {/* En una vencida no tiene efecto visible: se oculta la opción */}
+          {getEstado(row.original) !== "vencida" && (
+            <DropdownMenuItem
+              onClick={() => onToggleVisible(row.original)}>
+              Cambiar visibilidad
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             className="text-red-600 focus:text-red-600"
             onClick={() => onDelete(row.original)}>
